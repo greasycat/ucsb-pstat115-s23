@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.13)  3 APR 2023 10:52
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (MiKTeX 23.1) (preloaded format=pdflatex 2023.3.13)  4 APR 2023 13:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -579,15 +579,22 @@ sian Sta-tis-ti-cal Meth-ods\OT1/cmr/m/n/10 ; [][]$https : / / www . springer .
  com / us / book / 9780387922997$[][]). 
  []
 
+[1
+
+{C:/Users/targi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
 LaTeX Font Info:    Trying to load font information for U+ding on input line 17
-1.
+3.
 (C:\Users\targi\AppData\Local\Programs\MiKTeX\tex/latex/bbding\uding.fd
 File: Uding.fd 1996/02/01 v1.0 BBding font definitions
-) [1
-
-{C:/Users/targi/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] [2] 
+) [2]
+<schedule.pdf, id=41, 597.19106pt x 846.0408pt>
+File: schedule.pdf Graphic file (type pdf)
+<use schedule.pdf>
+Package pdftex.def Info: schedule.pdf  used on input line 214.
+(pdftex.def)             Requested size: 396.70256pt x 562.00333pt.
+[3 <./schedule.pdf>] 
 AED: lastpage setting LastPage
-[3]
+[4]
 
 Package caption Warning: Unused \captionsetup[lstlisting] on input line 29.
 See the caption package documentation for explanation.
@@ -597,13 +604,13 @@ Package rerunfilecheck Info: File `syllabus.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 13606 strings out of 476339
- 220737 string characters out of 5788119
+ 13615 strings out of 476339
+ 220902 string characters out of 5788119
  1869340 words of memory out of 5000000
- 33872 multiletter control sequences out of 15000+600000
+ 33880 multiletter control sequences out of 15000+600000
  514020 words of font info for 38 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 90i,11n,90p,504b,557s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 90i,11n,90p,1215b,493s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\targi\AppData\Local\MiKTeX\fonts/pk/ljfour/public/bbding/dpi600\bb
 ding10.pk> <C:\Users\targi\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi
 600\tcrm1000.pk><C:/Users/targi/AppData/Local/Programs/MiKTeX/fonts/type1/publi
@@ -612,9 +619,9 @@ pe1/public/amsfonts/cm/cmcsc10.pfb><C:/Users/targi/AppData/Local/Programs/MiKTe
 X/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Users/targi/AppData/Local/Progra
 ms/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/targi/AppData/Loca
 l/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on syllabus.pdf (3 pages, 96266 bytes).
+Output written on syllabus.pdf (4 pages, 123073 bytes).
 PDF statistics:
- 73 PDF objects out of 1000 (max. 8388607)
- 4 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 89 PDF objects out of 1000 (max. 8388607)
+ 5 named destinations out of 1000 (max. 500000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

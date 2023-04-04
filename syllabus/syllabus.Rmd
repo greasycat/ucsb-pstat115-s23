@@ -37,7 +37,7 @@ Spring 2023
 \item Location: \href{https://www.google.com/maps/search/?api=1&query=ucsb%20HSSB}{HSSB 1174}
 \item Gauchospace: \href{https://gauchospace.ucsb.edu/courses/course/view.php?id=55602}{link}
 \item Nectir: \href{https://app.nectir.io/group/ucsb/pstat-115-s23}{link}. We ask that when you have a question about the class that might be relevant to other students, post it on Nectir instead of emailing us. That way, all the staff can be on the same page and everyone can benefit from the response. Click on the Nectir link on Gaucho to be automatically added to the class channel. If you don't have an account already, to please make one at \url{ucsb.nectir.io}.
-\item JupyterHub: \href{https://tinyurl.com/2hpr9mpj}{link}. All your work should be completed here. Use this  to sync new assignments and labs.
+\item JupyterHub: \href{https://pstat115.lsit.ucsb.edu/hub/user-redirect/git-pull?repo=https%3A%2F%2Fgithub.com%2Frtargino%2Fucsb-pstat115-s23&urlpath=rstudio%2F&branch=main}{link}. All your work should be completed here. Use this  to sync new assignments and labs.
 \begin{itemize}
 \item {\color{red} Bookmark this link, you will use it a lot!}
 \end{itemize}
@@ -51,11 +51,9 @@ Spring 2023
 
 \noindent Professor Targino \url{rodrigotargino@ucsb.edu}: Office Hours, Wednesdays 4.45-5.45pm at OG1203 and on Zoom \url{https://fgv-br.zoom.us/j/97377443266} 
 
-\noindent TBD
+\noindent [TA] Gabrielle Salo \url{gsalo@umail.ucsb.edu}: Office Hours, Tuesdays from 3-4pm at  \url{https://ucsb.zoom.us/j/83407131759}
 
-\noindent TBD
-
-\noindent TBD
+\noindent [TA] Lauren ughes \url{laurenhughes@ucsb.edu}: Office Hours, Mondays 10am-12pm at SH5421
 
 \vskip.15in
 \noindent\textbf{Course Texts} 
@@ -87,6 +85,7 @@ PSTAT 120 A-B (probability and math-stat) and 126 (regression). Familiarity with
 
 \vspace*{.15in}
 
+\newpage
 \noindent \textbf{Tentative Course Topics:}
 \begin{center}
 \begin{minipage}{5in}
@@ -109,7 +108,7 @@ PSTAT 120 A-B (probability and math-stat) and 126 (regression). Familiarity with
 \begin{itemize}
 \item Homework (35\%).
   \begin{itemize}
-    \item There will be approximately 4 homeworks, due roughly every week on Sundays at midnight.
+    \item There will be approximately 4 homeworks, due roughly every week on Fridays at midnight.
     \item Each homework assignment will be given as a template that you should work from.
     \item All code must be written to be reproducible in Rmarkdown
     \item  All derivations can be done in any format of your choosing (latex, written by hand) but must be legible and \emph{must be incorporated into your final pdf}.
@@ -121,13 +120,20 @@ PSTAT 120 A-B (probability and math-stat) and 126 (regression). Familiarity with
 
 \item Quizzes (15\%)
   \begin{itemize}
-    \item Approximately 5 in quizzes (online), lowest dropped
+    \item Approximately 5 quizzes (online), lowest dropped
     \item There is no make-up for missed quizzes.
     \item Section attendance is an important part of the course.
   \end{itemize}
 \item Final exam (30\%). \textbf{In person, June 13th 2023}
 \end{itemize}
 
+\newpage
+
+\noindent\textbf{Tentative course schedule}
+
+```{r, echo = FALSE, message=FALSE, fig.align='center', out.width='0.75\\linewidth', fig.pos='H'}
+knitr::include_graphics("schedule.pdf")
+```
 
 \newpage
 \noindent\textbf{Course Policies:}  

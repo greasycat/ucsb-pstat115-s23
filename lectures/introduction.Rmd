@@ -37,7 +37,7 @@ __Course Pages__
 
 ### Grades
 
-- 35% - expect approximately 6 homeworks 
+- 35% - expect approximately 4 homeworks 
 
 - 20% - Midterm (May 9)
 
@@ -117,7 +117,7 @@ __Homeworks submission format__
     + Cloud based rstudio service
     + Log in with your UCSB NetID
 
-- Use [http://shorturl.at/iGI15](http://shorturl.at/iGI15) to sync new material (BOOKMARK THIS)
+- Use [http://shorturl.at/mSUV6](http://shorturl.at/mSUV6) to sync new material (BOOKMARK THIS)
   
 - Make sure you can write and compile an [R
   markdown](http://rmarkdown.rstudio.com) (`Rmd`) document online
