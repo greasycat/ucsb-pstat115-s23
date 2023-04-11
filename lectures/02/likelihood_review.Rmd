@@ -1,0 +1,834 @@
+---
+title: 'Week 2: Review and Background'
+author: "Professor Rodrigo Targino"
+output:
+  xaringan::moon_reader:
+    css: ['default', "xaringan_style.css"]
+
+
+---
+
+
+```{r setup, include=FALSE, warning=FALSE}
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+knitr::opts_chunk$set(dpi=300,fig.width=7)
+opts_chunk$set(echo=FALSE, fig.align='center', out.width="70%") 
+options("kableExtra.html.bsTable" = T)
+ig <- function(file) {knitr::include_graphics(file)}
+source("../scripts/make_figs.R")
+source("../scripts/color_defs.R")
+```
+
+
+### Resources
+
+Look at the resources folder in cloud for
+
+- A fantastic probability review sheet
+
+- Probability density information
+
+- Bayes Rules: Chapters 1 and 2
+
+---
+
+
+### Population and Sample
+
+
+```{r, out.width="75%"}
+ig("images/central_dogma_inference.png")
+
+```
+
+---
+
+### Population and Sample
+
+- The _population_ is the group or set of items relevant to your question
+
+  + Usually very large (often conceptualize a population as infinite)
+
+
+- Sample: a finite subset of the population
+
+  + How is the sampling collected (representative?)
+
+  + Denote the sample size with $n$
+
+---
+
+### Population and Sample    
+
+- Our goal is (usually) to learn about the population from the sample
+
+    + Population parameters encode relevant quantities
+
+    + The **estimand** is the thing we what to infer and is usually a function of the population parameters
+    
+    
+---
+
+### Random variables
+
+- A random variable, $Y$ has variability, can take on several different values (possibly infinitely may), and is associated with a distribution. 
+
+    + The distribution determines the probability that the r.v. will take a specific value.
+
+- Notation:
+    + $Y$ (uppercase) denotes a random variable 
+    - $y$ (lowercase) is a _realization_ of that random variable and is not random
+---
+    
+### Constants
+
+- Constants: quantities with 0 variance. 
+
+    + Constants can be _known_ (e.g. observed data) 
+    
+    + Constants can be _unknown_ (not observed) 
+
+
+
+---
+
+### Setup
+
+- The _sample space_ $\mathcal{Y}$ is the set of all possible datasets we could observe.  We observe _one_ dataset, $y$, from which we hope to learn about the world.  
+
+- The _parameter space_ $\Theta$ is the set of all possible parameter values $\theta$
+
+- $\theta$ encodes the population characteristics that we want to learn about
+
+- Our _sampling model_ $p(y\mid \theta)$ describes our belief about what data we are likely to observe for a given value of $\theta$.
+
+---
+
+### Notation  
+
+```{r}
+ig("images/central_dogma_inference.png")
+```
+
+
+---
+
+### The Likelihood Function
+
+- The likelihood is the "probability of the observed data" expressed as a function of the unknown parameter: 
+
+
+
+- A function of the unknown constant $\theta$. 
+
+- Depends on the observed data $y = (y_1, y_2, \ldots, y_n)$
+
+---
+
+### Independent Random Variables
+
+- $Y_1, ... , Y_n$ are random variables 
+
+- We say that $Y_1,...,Y_n$ are _conditionally_ independent given $\theta$ if ...
+<br/><br/>
+<br/><br/>
+
+- Conditional independence means that $Y_i$ gives no additional information about $Y_j$ beyond that in knowing $\theta$ 
+
+---
+
+### Example: A binomial model
+
+- Assume I go to the basketball court and takes 5 free throw shots
+
+- Model the number of made shots I make using a $\textrm{Bin}(5, \theta)$
+
+    + What are the key assumptions that make this a reasonable model?
+
+- $\theta$ represents my true skill (the fraction of shots I make) 
+
+- How can we estimate my true skill? 
+
+Likelihood:
+
+---
+
+### The binomial likelihood
+
+.center[I make 4 out of 5]
+```{r, out.width="60%"}
+par(mar=c(3,3,1,1), mgp=c(1.75,.75,0))
+par(cex=1.5)
+n <- 5
+k <- 4
+pgrid <- seq(0.01, 0.99, by=0.01)
+lvals <- sapply(pgrid, function(p) dbinom(k, n, p))
+plot(pgrid, lvals, type="l", col=cols2[1], lwd=2, ylab="Likelihood", xlab=expression(theta))
+
+lines(pgrid, lvals / choose(n, k), type="l", col=cols2[2], lwd=2)
+legend("topleft", legend=c("likelihood", "proportional Likelihood"), col=cols2, lty=1, lwd=2,
+       bty="n")
+abline(v=0.8, lty=2)
+
+```
+
+---
+
+### The log-likelihood
+
+
+
+```{r, out.width="60%"}
+par(mar=c(3,3,1,1), mgp=c(1.75,.75,0))
+par(cex=1.5)
+n <- 5
+k <- 4
+pgrid <- seq(0.01, 0.99, by=0.01)
+lvals <- sapply(pgrid, function(p) dbinom(k, n, p, log=TRUE))
+plot(pgrid, lvals, type="l", col=cols2[1], lwd=2, ylab="Log-likelihood", xlab=expression(theta), ylim=c(min(lvals), 3))
+lines(pgrid, lvals - log(choose(n, k)), type="l", col=cols2[2], lwd=2)
+legend("topleft", legend=c("log-likelihood", "log proportional likelihood"), 
+       col=cols2, lty=1, lwd=2, bty="n")
+abline(v=0.8, lty=2)
+```
+
+---
+
+### Maximum Likelihood Estimation
+
+- The _maximum likelihood estimate_ (MLE) is the value of $\theta$ that makes the data the most 
+"likely", that is, the value that maximizes $L(\theta)$
+
+- To compute the maximum likelihood estimate:
+
+  1. Write down the likelihood and take its log: 
+  $$\text{log}(L(\theta)) = \ell(\theta)$$
+  
+  2. Take the derivative of $\ell(\theta)$ with respect to $\theta$:
+  $$\ell'(\theta) = \frac{d\ell(\theta)}{d\theta}$$
+  
+  3. Solve for $\hat \theta$ such that $\ell'(\theta) = 0$ 
+
+---
+
+###Maximum Likelihood Estimation
+
+---
+
+### Example: Binomial  
+
+- Assume we are polling the presidential race in the next election
+
+- We poll 25 random students in the class $Y_1, \ldots Y_n$ from $n=25$
+- $Y_i$ is either 0 (Republican) or 1 (Democrat)
+
+- $Y_i \sim \text{Bern}(\theta)$, where $\text{Bern}(\theta)$ is equivalent to  Bin(1, $\theta$)
+    + Bernoulli random variables is a binomial with one trial
+    + Assume our class is a simple random sample of the population
+
+- How do we estimate $\theta$ for multiple observations?
+
+---
+
+### Example: the likelihood for independent Bernoulli's
+
+
+$$\begin{aligned}
+p(y_1, y_2, \ldots, y_n|1, \theta) &= p(y_1, y_2, \ldots, y_n|\theta) \\
+&= p(y_1|\theta)p(y_2|\theta)\ldots p(y_n|\theta) \\
+&= \displaystyle\prod_{i=1}^n p(y_i|\theta) \\
+&= \displaystyle\prod_{i=1}^n \dbinom{1}{y_i}\theta^{y_i}(1-\theta)^{(1-y_i)} \\
+&= \left[\displaystyle\prod_{i=1}^n \dbinom{1}{y_i}\right]\theta^{\sum_{i=1}^n y_i}(1-\theta)^{n-\sum_{i=1}^n y_i} \\
+&= L(\theta)
+\end{aligned}$$
+
+
+---
+
+### Sufficient Statistics
+
+- Let $L(\theta) = p(y_1, ... y_n \mid \theta)$ be the likelihood and $s(y_1, ... y_n)$ be a statistic
+- $s(y)$ is a sufficient statistic if we can write: 
+  $$L(\theta) = h(y_1, ... y_n)g(s(y), \theta)$$ 
+    + g is only a function of s(y) and  $\theta$ only 
+    + h is _not_  a function of $\theta$
+
+- This is known as the _factorization theorem_ (Fisher–Neyman)
+
+- $L(\theta) \propto g(s(y), \theta)$
+
+---
+
+### Sufficient Statistics
+- Intuition: a sufficient statistic contains all of the information about $\theta$
+    + Many possible sufficient statistics
+    
+    + Often seek a statistic of the lowest possible dimension (minimal sufficient statistic)
+
+    + What are some sufficient statistics in the previous binomial example?
+
+---
+
+### Estimators and Estimates
+
+- In classical (frequentist) statistics, $\theta$ is an unknown constant
+
+- An **estimator** of a parameter $\theta$ is a function of the random variables, $Y$
+
+    + E.g. for $\text{Binomial}(1, \theta)$: $\hat \theta(Y) =  \frac{\sum_i Y_i}{n}$
+    
+    + An estimator is a random variable
+    
+    + Interested in properties of estimators (e.g. mean and variance)
+
+---
+
+### Estimators and Estimates    
+-  $\hat \theta(y)$ as a function of realized data is called an **estimate**
+
+    + Plug in observed data $y = (y_1, ... y_n)$ to estimate $\theta$
+    
+    + An estimate is a non-random constant (it is has 0 variability)
+    
+    + E.g. in the binomial(1, $\theta$), $\hat \theta = \bar y =  \frac{\sum_i y_i}{n}$ is the maximum likelihood estimate for the binomial proportion.
+
+---
+
+### Bias and Variance
+
+- Estimators are random variables.  What are some r.v. properties that are desirable?
+
+--
+
+- $\text{Bias: } E[\hat \theta] - \theta = 0$ 
+
+  + $E[\hat \theta] - \theta = 0$  means the estimator is unbiased
+
+  + E.g. expectation of the binomial MLE: $E[\hat \theta] = E[\frac{Y}{n}] = \theta$ 
+
+- $\text{Var}(\hat \theta) = E[(\hat \theta - E[\hat\theta])^2]$
+
+E.g. variance of the binomial MLE is $$\text{Var}[\hat \theta] = \text{Var}(\frac{Y}{n}) = \frac{\theta(1 - \theta)}{n}$$
+
+---
+
+### Bias and Variance
+
+- Want estimators that have low bias and variance because this implies low overall error
+
+- Mean squared error equals $\text{bias}^2$ + variance
+
+---
+
+### Bias
+
+.center[The average difference between the prediction and the response]
+
+
+
+```{r, echo=FALSE, out.width='30%', fig.align='center', include=TRUE}
+ig("images/bias_target.png")
+```
+
+.center[Statistical definition of bias: $$E[\hat \theta - \theta]$$]
+
+---
+
+### Variance
+
+.center[How variable is the prediction about its mean?]
+
+
+
+```{r, echo=FALSE, out.width='30%', fig.align='center'}
+ig("images/variance_target.png")
+```
+
+.center[Statistical definition of variance: $$E[\hat \theta - E[\hat \theta]]^2$$]
+
+---
+### Bias and Variance
+
+```{r, echo=FALSE, out.width='70%', fig.align='center'}
+ig("images/bias_variance.png")
+```
+
+---
+
+### Maximum Likelihood Estimators
+
+Under relatively weak conditions:
+
+- The MLE is _consistent_.  It converges to the true value as the sample size goes to infinity.
+    + Need bias and variance to go to 0 as sample size increases
+    
+- The MLE is _asymptotically optimal_.  For "large" sample sizes is has the lowest variance.
+
+- _Equivariance_: if $\hat \theta$ is the MLE for $\theta$ then $g(\hat \theta)$ is the MLE for $g(\theta)$
+
+---
+
+### Confidence Interval Simulations
+
+.center[Let's do 50 hypothetical replications to illustrate confidence intervals]
+
+
+
+```{r, echo=TRUE, eval=FALSE}
+for i in 1 to 50:
+    - Draw Y_i from Bin(25, 0.6)
+    - Compute and plot the 95% confidence interval
+```
+
+- Will have 50 confidence intervals based on 50 simulated datasets.
+
+- A 95% interval means that on average 95% of these 50 intervals will cover the true value
+
+---
+
+### 95% Confidence Intervals
+
+.center[In truth, 60% of the population will vote for "candidate 1"]
+```{r, out.width='60%'}
+par(cex=1.5)
+prob <- 0.6
+nintervals <- 50
+sz <- 25
+counts <- rbinom(n=nintervals, size=sz, prob=prob)
+phat <- counts / sz
+
+lower <- phat - 1.96 * sqrt(phat * (1-phat) / sz)
+upper <- phat + 1.96 * sqrt(phat * (1-phat) / sz)
+
+plot(0, 0, ylim=c(-1, nintervals + 1), xlim=c(0, 1), cex=0, xlab=expression(theta), ylab="", lwd=2)
+segments(x0=lower, x1=upper, y0=1:nintervals, y1=1:nintervals, 
+         col=ifelse(upper < prob | lower > prob, cols2[1], "grey"), lwd=4)
+abline(v=prob, col=cols2[2], lwd=4)
+
+```
+We expect $0.05 \times 50 = 2.5$ of the intervals to _not_ cover the true parameter, $p = 0.6$, on average
+
+---
+
+### 50% Confidence Intervals
+
+
+```{r, out.width='60%'}
+par(cex=1.5)
+prob <- 0.6
+nintervals <- 50
+sz <- 25
+counts <- rbinom(n=nintervals, size=sz, prob=prob)
+phat <- counts / sz
+
+lower <- phat - 0.67 * sqrt(phat * (1-phat) / sz)
+upper <- phat + 0.67 * sqrt(phat * (1-phat) / sz)
+
+plot(0, 0, ylim=c(-1, nintervals + 1), xlim=c(0, 1), cex=0, xlab=expression(theta), ylab="")
+segments(x0=lower, x1=upper, y0=1:nintervals, y1=1:nintervals, col=ifelse(upper < prob | lower > prob, cols2[1], "grey"), lwd=4)
+abline(v=prob, col=cols2[2], lwd=4)
+
+```
+We expect $0.50 \times 50 = 25$ of the intervals to _not_ cover the true parameter, 0.6
+
+---
+
+### Data Generating Process (DGP)
+
+- DGP: a statistical model for how the observed data might have been generated 
+
+- Often write the DGP using pseudo-code:
+
+```{r, echo=TRUE, eval=FALSE, tidy=FALSE}
+
+for (i in 1:N)
+  - Generate y_i from a Normal(0, 1)
+return y = (y_1, ... y_N)
+
+```
+
+- The DGP should tell a story about how the data came to be
+
+- Can translate the DGP into a statistical model
+
+---
+
+### Data Generating Process (DGP)
+Assume everybody in this class goes to a basketball court and takes 10 free throw shots:
+
+
+```{r mixture_example, warning=FALSE, out.width="60%"}
+z <- ifelse(rbinom(100, 1, 0.4), "Experience", "No Experience")
+y <- rbinom(100, size=10, prob=ifelse(z=="Experience", 0.8, 0.3))
+ggplot(data.frame(x=y)) + geom_histogram(aes(x=x), bins=30) + theme_bw(base_size=24) + ylab("Count") + xlab("Makes") + scale_color_hue(cols2)
+```
+
+---
+
+background-image: url(images/csi.jpg)
+background-size: cover
+
+---
+
+### Data Generating Process (DGP)    
+
+Tell a plausible story: some students play basketball and some don't.  Before you take your shots we record whether or not you have played before. 
+
+
+```{r, tidy=FALSE, echo=TRUE, eval=FALSE}
+assume theta_1 > theta_0
+for (i in 1:100)
+  - Generate z_i from Bin(1, phi)
+    - p_i = theta_0 if z_i=0
+    - p_i = theta_1 if z_i=1
+  - Generate y_i from a Binom(10, p_i)
+return y = (y_1, ... y_100) and z = (z_1, ..., z_100)
+```
+
+
+
+.center[Is this a reasonable model?]
+
+---
+
+### Mixture Models
+
+$$\begin{aligned}
+Z_i = \left\{\begin{array}{ll}0 &  \textrm{if the } i^{th} \textrm{ if student doesn't play basketball}\\1 &  \textrm{if the } i^{th} \textrm{ if student does play basketball }\end{array}\right.\end{aligned}$$
+
+$$Z_i \sim Bin(1, \phi)$$
+
+$$\begin{aligned}Y_i \sim \left\{\begin{array}{ll}\textrm{Bin}(10, \theta_0) &  \textrm{if } Z_i = 0\\ \textrm{Bin}(10, \theta_1) &  \textrm{if } Z_i = 1\\
+\end{array}\right.\end{aligned}$$
+
+--
+
+- $\phi$ is the fraction of students that have experience playing basketball
+
+- $\theta_1$ is the probability of making a shot for an experienced player
+
+- $\theta_0$ is the probability of making a shot for an inexperienced player
+
+---
+
+### Table of relevant quantities
+
+- Can be a fixed constant (no variability) or a random variable (has variability)
+
+- Can be observed (known) or unobserved (unknown)
+
+- Helpful for to keep track of all of the relevant quantities
+
+---
+
+### Mixture models
+
+- A mixture model is a probabilistic model for representing the presence of subpopulations 
+
+
+- The subpopoluation to which each individual belongs is not necessarily known 
+
+    + e.g. do we ask: "have you played basketball before?"
+
+--
+
+- When $z_i$ is not observed, we sometimes refer to it as a clustering model 
+
+    + _unsupervised_ learning
+
+---
+
+### A Mixture Model
+
+```{r, dependson="mixture_example", warning=FALSE, out.width="60%"}
+ggplot(data.frame(x=y, Group=as.factor(z))) + geom_histogram(aes(x=x, fill=Group), bins=30) + theme_bw(base_size=24) + ylab("Count") + xlab("Makes") + theme(legend.position="top") +  colorspace::scale_fill_discrete_qualitative("Set 2")
+```
+
+.center[Note: z is observed]
+
+---
+
+### Mixture Model Likelihood
+.center[**Z is observed**]
+
+
+---
+
+### Sufficient statistics When $Z_i$ is observed
+
+Together, the following quantities are sufficient for $(\theta_0, \theta_1, \phi)$
+
+- $\sum y_i z_i$ (total number of shots made by experienced players)
+
+- $\sum y_i (1 - z_i)$ (total number of shots made by inexperienced players)
+
+- $\sum z_i$ (total number experienced players)
+
+---
+
+### Data Generating Process (DGP)    
+
+```{r, tidy=FALSE, echo=TRUE, eval=FALSE}
+for (i in 1:100)
+  - Generate z_i from Bin(1, phi)
+    - p_i = theta_1 if z_i=1
+    - p_i = theta_0 if z_i=0
+  - Generate y_i from a Binom(10, p_i)
+return y = (y_1, ... y_100)
+```
+
+
+.center[This time we don't record who has experience with basketball.]
+
+
+
+
+---
+
+### A Mixture Model
+```{r, dependson="mixture_example", warning=FALSE}
+ggplot(data.frame(x=y)) + geom_histogram(aes(x=x), bins=30) + theme_bw(base_size=24) + ylab("Count") + xlab("Makes")
+```
+
+---
+
+### Table of Relevant Quantities
+
+---
+
+### A finite mixture model
+
+- Even if we don't observe $Z$, it's often useful to introduce it as a _latent_ variable
+
+- Write the _observed data likelihood_ by integrating out the latent variables from the _complete data likelihood_
+
+$$\begin{aligned}
+p(Y \mid \theta) &= \sum_z p(Y, Z = z \mid \theta)\\
+&= \sum_z p(Y \mid Z = z, \theta)p(Z = z \mid \theta)\\
+\end{aligned}$$
+
+
+In general we can write a $K$ component mixture model as: $$p(Y) = \sum_k^K \pi_k p_k(Y)$$
+with $\sum \pi_k = 1$
+
+---
+
+### Mixture Model Likelihood
+.center[**Z unobserved**]
+
+
+---
+
+### Finite Mixture models
+
+```{r, out.width="60%"}
+### ig("../images/gmm_example.png")
+f1 <- function(x) dnorm(x, 0, 1)
+f2 <- function(x) dnorm(x, -2, 3)
+f3 <- function(x) dnorm(x, 3, 0.5)
+
+curve(0.4*f1(x), col=cols5[3], lwd=3, from=-8, to=8, ylim=c(0, 0.25), xlab="", ylab="")
+curve(0.3*f2(x), col=cols5[3], lwd=3, from=-8, to=8, add=TRUE)
+curve(0.3*f3(x), col=cols5[3], lwd=3, from=-8, to=8, add=TRUE)
+curve(0.4*f1(x) + 0.3 * f2(x) + 0.3*f3(x), col=cols5[2], lwd=3, from=-8, to=8, add=TRUE)
+```
+
+---
+
+### Infinite Mixture Models
+
+- In the previous example the latent variable had finitely many outcomes
+
+- Latent varibles can have infinitely many outcomes in which case we have any infinite mixture
+
+- Example:
+
+$$\begin{aligned}
+\mu &\sim N(0, \tau^2)\\
+Y &\sim N(\mu, \sigma^2)
+\end{aligned}$$
+
+$$ p(Y\mid \sigma^2, \tau^2) = \int p(Y, \mu \mid \sigma^2, \tau^2) d\mu $$
+
+.center[What is the _marginal_ distribution of Y?]
+
+---
+
+### Bayesian Inference
+
+- In frequentist inference, $\theta$ is treated as a fixed unknown constant
+
+- In Bayesian inference, $\theta$ is treated as a random variable
+
+- Need to specify a model for the joint distribution $p(y, \theta) = p(y \mid \theta)p(\theta)$
+
+---
+
+### Bayesian Inference in a Nutshell
+
+1.  The _prior distribution_ $p(\theta)$ describes our belief about the true population characteristics, for each value of $\theta \in \Theta$.
+
+--
+
+2.  Our _sampling model_ $p(y\mid \theta)$ describes our belief about what data we are likely to observe if $\theta$ is true.  
+
+--
+
+3.  Once we actually observe data, $y$, we update our beliefs about $\theta$ by computing _the posterior distribution_ $p(\theta \mid y)$.  We do this with Bayes' rule!
+
+---
+
+### Bayes' Rule
+
+$$ P(A \mid B) = \frac{P(B \mid A)PAB)}{P(B)}$$
+
+
+- $P(A \mid B)$ is the conditional probability of A given B
+
+- $P(B \mid A)$ is the conditional probability of B given A
+
+- $P(A)$ and $P(B)$ are called the marginal probability of A and B (unconditional)
+
+---
+
+### Bayes' Rule for Bayesian Statistics
+
+$$ P(\theta \mid y) = \frac{P(y \mid \theta)P(\theta)}{P(y)}$$
+
+
+- $P(\theta \mid y)$ is the posterior distribution
+
+- $P(y \mid \theta)$ is the likelihood
+
+- $P(\theta)$ is the prior distribution
+
+- $P(y) = \int_\Theta p(y\mid \tilde \theta)p(\tilde \theta) d\tilde \theta$ is the model evidence 
+
+---
+
+### Bayes' Rule for Bayesian Statistics
+
+$$\begin{aligned} 
+P(\theta \mid y) &= \frac{P(y \mid \theta)P(\theta)}{P(y)}\\
+&\propto P(y \mid \theta)P(\theta)
+\end{aligned}$$
+
+- Start with a subjective belief (prior)
+
+- Update it with evidence from data (likelihood)
+
+- Summarize what you learn (posterior)
+
+
+
+.center[**The posterior is proportional to the likelihood times the prior!**]
+
+---
+
+### Example: Estimating COVID Infection Rates 
+
+- We need to estimate the prevalence of a COVID in Isla Vista
+
+- Get a small random sample of 20 individuals to check for infection
+
+```{r}
+ig("images/covid.jpg")
+```
+
+---
+
+### Example: Estimating Infection Rates 
+
+- $\theta$ represents the population fraction of infected
+
+- $Y$ is a random variable reflecting the number of infected in the sample
+
+- $\Theta = [0,1] \quad \mathcal{Y} = \{0,1 , \ldots , 20 \}$
+
+- Sampling model: $Y \sim \text{Binom}(20, \theta)$
+
+---
+### Example: Estimating Infection Rates 
+
+```{r, out.width="50%"}
+par(cex = 1.5)
+fig_1_1_a(cols5[1:3])
+```
+
+---
+
+### Example: Estimating Infection Rates 
+
+- Assume _a priori_ that the population rate is low 
+        
+    + The infection rate in comparable cities ranges from about 0.05 to 0.20
+    
+- Assume we observe $Y = 0$ infected in our sample
+
+- What is our estimate of the true population fraction of infected individuals?
+
+---
+
+## Example: Estimating Infection Rates 
+
+```{r, out.width="50%"}
+par(cex = 1.5)
+fig_1_1_b(cols2)
+```
+
+---
+
+### Table of Relevant Quantities
+
+
+
+
+---
+
+### Summary
+
+- Likelihood, log likehood in MLE
+
+- Confidence intervals (how they are defined in frequentist inference)
+
+- Sufficient statistics
+
+- Mixture models
+
+---
+
+### Summary
+
+- In frequentist inference, unknown parameters treated as constants
+
+     + Estimators are random (due to sampling variability)
+
+     + Asks: "how would my results change if I repeated the experiment?"
+
+---
+
+### Summary
+- In Bayesian inference, unknown parameters are random variables.
+
+  + Need to specify a prior distribution for $\theta$ (not easy)
+
+  + Asks: "what do I _believe_ are plausible values for the unknown parameters?"
+
+  + Who cares what might have happened, focus on what _did_ happen!
+
+---
+
+### Assignments
+
+- Read chapters 1 and 2 of BR
+
+
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+```
