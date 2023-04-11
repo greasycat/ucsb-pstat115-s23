@@ -55,6 +55,10 @@ Spring 2023
 
 \noindent [TA] Lauren ughes \url{laurenhughes@ucsb.edu}: Office Hours, Mondays 10am-12pm at SH5421
 
+\noindent [ULA] Cyril Wang \url{cyrilwang@umail.ucsb.edu}: Tuesdays from 11am-1pm on Zoom \url{https://ucsb.zoom.us/j/9306692287}
+
+\noindent [ULA] Chunting Zheng \url{chunting@umail.ucsb.edu}: Tue: 3pm - 5pm, Wed: 4pm - 6pm, Fri: 9am - 11am \url{https://ucsb.zoom.us/j/2096363969}
+
 \vskip.15in
 \noindent\textbf{Course Texts} 
 
