@@ -1,0 +1,842 @@
+---
+title: 'One Parameter Models'
+author: "Professor Rodrigo Targino"
+output:
+  xaringan::moon_reader:
+    css: ['default', "xaringan_style.css"]
+---
+
+```{r, echo=FALSE, warning=FALSE}
+library(knitr)
+library(ggplot2)
+library(gganimate)
+library(kableExtra)
+suppressPackageStartupMessages(library(tidyverse))
+opts_chunk$set(echo=FALSE, fig.align='center', out.width="60%") 
+knitr::opts_chunk$set(dpi=300, fig.width=7)
+options("kableExtra.html.bsTable" = T)
+ig <- function(file) {knitr::include_graphics(file)}
+source("../scripts/make_figs.R")
+source("../scripts/color_defs.R")
+
+```
+
+### Announcements
+
+- Reading: Chapter 2 and 3, Bayes Rules
+
+---
+
+### Bayesian Inference
+
+- In frequentist inference, $\theta$ is treated as a fixed unknown constant
+
+- In Bayesian inference, $\theta$ is treated as a random variable
+
+- Need to specify a model for the joint distribution $p(y, \theta) = p(y \mid \theta)p(\theta)$
+
+---
+
+### Setup
+
+- The _sample space_ $\mathcal{Y}$ is the set of all possible datasets.  We observe one dataset $y$ from which we hope to learn about the world.  
+
+    + $Y$ is a random variable, $y$ is a realization of that random variable
+
+- The _parameter space_ $\Theta$ is the set of all possible parameter values $\theta$
+
+    + $\theta$ encodes the population characteristics that we want to learn about!
+
+---
+
+### Bayesian Inference in a Nutshell
+
+1.  The _prior distribution_ $p(\theta)$ describes our belief about the true population characteristics, for each value of $\theta \in \Theta$.
+
+--
+
+2.  Our _sampling model_ $p(y\mid \theta)$ describes our belief about what data we are likely to observe when the true population parameter is $\theta$.  
+
+--
+
+3.  Once we actually observe data, $y$, we update our beliefs about $\theta$ by computing _the posterior distribution_ $p(\theta \mid y)$.  We do this with Bayes' rule!
+
+---
+
+### Bayes' Rule
+
+$$ P(A \mid B) = \frac{P(B \mid A)P(A)}{P(B)}$$
+
+
+- $P(A \mid B)$ is the conditional probability of A given B
+
+- $P(B \mid A)$ is the conditional probability of B given A
+
+- $P(A)$ and $P(B)$ are called the marginal probability of A and B (unconditional)
+
+---
+
+### Bayes' Rule for Bayesian Statistics
+
+$$ P(\theta \mid y) = \frac{P(y \mid \theta)P(\theta)}{P(y)}$$
+
+
+- $P(\theta \mid y)$ is the posterior distribution
+
+- $L(\theta) \propto P(y \mid \theta)$ is the likelihood
+
+- $P(\theta)$ is the prior distribution
+
+- $P(y) = \int_\Theta p(y\mid \tilde \theta)p(\tilde \theta) d\tilde \theta$ is the model evidence 
+
+---
+
+### Computing the Posterior Distribution
+
+$$\begin{aligned} 
+P(\theta \mid y) &= \frac{P(y \mid \theta)P(\theta)}{P(y)}\\
+&\propto P(y \mid \theta)P(\theta)\\
+&\propto L(\theta)P(\theta)
+\end{aligned}$$
+
+- Start with a subjective belief (prior)
+
+- Update it with evidence from data (likelihood)
+
+- Summarize what you learn (posterior)
+
+
+
+.center[**The posterior is proportional to the likelihood times the prior!**]
+
+---
+
+### Bayesian vs Frequentist
+
+- In frequentist inference, unknown parameters treated as constants
+
+     + Estimators are random (due to sampling variability)
+   
+     + Asks: what would I expect to see if I repeated the experiment?"
+
+--
+
+- In Bayesian inference, unknown parameters are random variables.
+
+     + Need to specify a prior distribution for $\theta$ (not easy)
+    
+     + Asks: "what do I _believe_ are plausible values for the unknown parameters given the data?"
+
+     + Who cares what might have happened, focus on what _did_ happen by conditioning on observed data.
+
+---
+
+### Example: estimating shooting skill in basketball
+
+- On November 18, 2017, an NBA basketball player, Robert Covington, had made 49 out of 100 three point shot attempts.  
+
+--
+
+- At that time, his three point field goal percentage, 0.49, was the best in the league and would have ranked in the top ten all time
+
+--
+
+- How can we estimate his true shooting skill?
+
+    + Think of "true shooting skill" as the fraction he would make if he took infinitely many shots
+
+---
+
+### Example: estimating shooting skill in basketball
+
+- Assume every shot is independent (reasonable) and identically distributed (less reasonble?)
+
+- Let $Y \sim \text{Bin}(n, \theta)$ where $\theta$ corresponds to his true skill
+
+- Frequentist inference tells us that the maximum likelihood estimate is simply $\frac{y}{n} = 49/100 = 0.49$
+
+- What would our estimates be if we use Bayesian inference?
+
+  + What properties do we want for our prior distribution?
+  
+---
+
+### Cromwell's Rule
+
+The use of priors placing a probability of 0 or 1 on events should be avoided except where those events are excluded by logical impossibility. 
+
+If a prior places probabilities of 0 or 1 on an event, then no amount of data can update that prior.
+
+> I beseech [beg] you, in the bowels of Christ, think it possible that you may be mistaken.
+> `r tufte::quote_footer('--- Oliver Cromwell')`
+
+---
+
+### Cromwell's Rule
+
+
+> Leave a little probability for the moon being made of green cheese; it can be as small as 1 in a million, but have it there since otherwise an army of astronauts returning with samples of the said cheese will leave you unmoved.
+> `r tufte::quote_footer('--- Dennis Lindley (1991)')`
+
+If $p(\theta = a) = 0$ for a value of $a$, then the posterior distribution is always zero, regardless of what the data says
+$$p(\theta = a | y) \propto p(y | \theta = a) p(\theta = a) = 0$$
+
+---
+
+### Example: estimating shooting skill in basketball
+
+- Assume every shot is independent (reasonable) and identically distributed (less reasonble?)
+
+- Let $Y \sim \text{Bin}(n, \theta)$ where $\theta$ corresponds to his true skill
+
+- Frequentist inference tells us that the maximum likelihood estimate is simply $\frac{y}{n} = 49/100 = 0.49$
+
+- What would our estimates be if we use Bayesian inference?
+
+  + If our prior reflects "complete ignorance" about basketball?
+  
+  + What if we want to incorporate prior domain knowledge?
+
+---
+    
+### The Binomial Model
+
+- The uniform prior: $p(\theta) = \text{Unif}(0, 1) = \mathbf{1}\{\theta \in [0, 1]\}$
+  + A "non-informative" prior
+  
+- Posterior: $p(\theta \mid y) \propto \underset{\text{likelihood}}{\underbrace{\theta ^ { y } ( 1 - \theta ) ^ { n - y }}} \times \underset{\text{prior}}{\underbrace{\mathbf{1}\{\theta \in [0, 1]\}}}$
+
+- The above posterior density is is a density over $\theta$.  
+
+--
+
+- $p(\theta \mid y) \sim \text{Beta}(y + 1 , n - y + 1) = \frac{\Gamma (n) } { \Gamma (n-y) \Gamma (y) } \theta ^ { y } ( 1 - \theta ) ^ { n - y }$
+
+---
+
+### Example: estimating shooting skill in basketball
+
+```{r, out.width="60%"}
+
+alpha <- 1
+beta <- 1
+
+cov_plot <- ggplot(data.frame(x=rnorm(100)), aes(x)) + 
+  stat_function(fun=function(x, alpha, beta) 1/2*dbeta(x, alpha, beta), args=list(49, 50), aes(colour="Likelihood"), size=1.2) + #likelihood
+  stat_function(fun=dbeta, args=list(alpha, beta), aes(colour="Prior"), size=1.2) + #prior 
+  stat_function(fun=dbeta, args=list(alpha+49, beta+50), aes(colour="Posterior"), size=1.2) + #posterior
+  xlim(c(0, 1)) + theme_bw(base_size=24) + xlab("3PT%") + ylab("") + ggtitle("Likelihood, Prior, Posterior") + 
+  geom_vline(xintercept=49/99, linetype="dashed", colour=cols3[1], size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = c(0.8, 0.8),
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+cov_plot  
+
+
+```
+.center[Posterior is proportional to the likelihood]
+
+
+---
+
+### Summarizing Posterior Results
+
+- An entire distribution describes our beliefs about the value for $\theta$.  How can we summarize these beliefs?
+
+--
+
+- _Point estimates:_ posterior mean or mode: 
+
+    + $E[\theta \mid y] = \int_\Theta \theta p(\theta \mid y) d\theta$ (the posterior mean)
+
+    + $\text{arg max } p(\theta \mid y)$ (_maximum a posteriori_ estimate)
+
+--
+
+- Posterior variance: $\text{Var}[\theta \mid y] = \int_\Theta (\theta - E[\theta\mid y])^2 p(\theta \mid y) d\theta$ 
+
+--
+
+- Posterior credible intervals: for any region $R(y)$ of the parameter space compute the probability that $\theta$ is in that region: $p(\theta \in R(y))$
+
+---
+
+### Beta Distributions
+
+```{r, out.width="60%"}
+ig("images/beta_distributions.png")
+```
+
+$$\text{Beta}(\alpha, \beta) = \frac{\Gamma (\alpha + \beta) } { \Gamma (\alpha) \Gamma (\beta) } \theta ^ { \alpha - 1 } ( 1 - \theta ) ^ { \beta - 1 }$$
+
+
+---
+
+### Summarizing Posterior Results
+
+- $\text{Beta}(\alpha, \beta) = \frac{\Gamma (\alpha + \beta) } { \Gamma (\alpha) \Gamma (\beta) } \theta ^ { \alpha - 1 } ( 1 - \theta ) ^ { \beta - 1 }$
+
+- The mean of a $\text{Beta}(\alpha, \beta)$ distribution r.v. $\frac{\alpha}{\alpha + \beta}$
+
+- The mode of a $\text{Beta}(\alpha, \beta)$ distributed r.v. is $\frac{\alpha - 1}{\alpha + \beta - 2}$
+
+- The variance of a $\text{Beta}(\alpha, \beta)$ r.v. is $\frac { \alpha \beta } { ( \alpha + \beta ) ^ { 2 } ( \alpha + \beta + 1 ) }$
+
+-  In R: `dbeta`, `rbeta`,  `pbeta`, `qbeta` 
+
+---
+
+### Informative prior distributions
+
+- At that time, his three point field goal percentage, 0.49, was the best in the league and would have ranked in the top ten all time
+
+- It seems very unlikely that this level of skill would continue for an entire season of play.
+
+- A uniform prior distribution doesn't reflect our known beliefs.  We need to choose a more _informative_ prior distribution
+
+---
+
+### Informative prior distributions
+
+- When $p(\theta) \sim U(0, 1)$ then the posterior was a Beta distribution  
+
+- Remember: the binomial likelihood is $L(\theta) \propto \theta^y(1-\theta)^{n-y}$
+
+- Choose a prior with a similar looking form: $p(\theta) \propto \theta^{\alpha-1}(1-\theta)^{\beta-1}$ 
+
+
+
+---
+
+### Informative prior distributions
+
+- When $p(\theta) \sim U(0, 1)$ then the posterior was a Beta distribution  
+
+- Remember: the binomial likelihood is $L(\theta) \propto \theta^y(1-\theta)^{n-y}$
+
+- Choose a prior with a similar looking form: $p(\theta) \propto \theta^{\alpha-1}(1-\theta)^{\beta-1}$ 
+
+- Then $p(\theta \mid y) \propto \theta^{y + \alpha - 1}(1-\theta)^{n - y + \beta - 1}$ is a $\text{Beta}(y + \alpha, n - y + \beta)$
+
+- For the binomial model, a beta prior distribution implies a beta posterior distribution!
+
+- The family of Beta distributions is called a **conjugate prior** distribution for the binomial likelihood.
+
+---
+
+### Conjugate Prior Distributions
+
+**Definition:** A class of prior distributions, $\mathcal{P}$ for $\theta$ is called _conjugate_ for a sampling model $p(Y|\theta)$ if
+$p(\theta) \in \mathcal{P} \implies p(\theta|y) \in \mathcal{P}$
+
+--
+
+- The prior distribution and the posterior distribution are in the same family
+
+--
+
+- Conjugate priors are very convenient because they make calculations easy
+
+--
+
+- The parameters for conjugate prior distribution have nice interpretations
+
+--
+
+- Note: convenience is not correctness. Best to choose prior distributions that reflect your true knowledge / experience, not convenience. We'll return to this later.
+
+---
+
+### Pseudo-Counts Interpretation
+
+- Observe $y$ successes, $n - y$ failures
+
+- If $p(\theta) \sim \text{Beta}(\alpha, \beta)$ then $p(\theta \mid y) = \text{Beta}(y + \alpha, n - y + \beta)$
+
+- What is $E[\theta \mid y]$?
+
+---
+
+### Example: estimating shooting skill in basketball
+
+- On November 18, 2017, an NBA basketball player, Robert Covington, had made 49 out of 100 three point shot attempts.  
+
+- At that time, his three point field goal percentage, 0.49, was the best in the league and would have ranked in the 10 ten all time
+
+- Prior knowledge tells us it is unlikely this will continue! 
+
+- How can we use Bayesian inference to better estimate his true skill?
+
+---
+
+### Three point shooting in 2017-2018
+
+```{r, echo=FALSE, message=FALSE, out.width="80%", fig.width=10, fig.height=7}
+
+
+### library(nbastatR)
+### nba_2018_data <- nbastatR::get_bref_players_seasons(2018)
+### write_csv(nba_2018_data, path="../data/nba_2018.csv")
+nba_2018_data <- read_csv("../data/nba_2018.csv")
+
+nba_2018_data <- nba_2018_data %>% mutate(Attempts = cut(fg3aTotals, breaks=seq(0, 800, by=100)))
+nba_2018_data <- nba_2018_data %>% mutate(Attempts2 = cut(fgaTotals, breaks=c(seq(0, 1500, by=100), 2000), labels = c(seq(100, 1500, by=100), "> 1500")))
+
+nba_2018_data %>% 
+  filter(fg3aTotals > 100) %>% 
+  ggplot() + geom_histogram(aes(x=pctFG3, fill=Attempts)) + 
+  theme_bw(base_size=24) + 
+  scale_fill_manual(values = wes_palette("Zissou1", 8, type="continuous")) + 
+  xlab("3PT%") + ylab("Counts") + 
+  ggtitle("NBA 3PT% (2017-2018)") + 
+  geom_vline(xintercept = 0.49, linetype="dashed", size=1.2, col="dark green") + 
+  theme(legend.position="bottom")
+
+```
+
+--
+
+.center[[Regression Toward the Mean](https://en.wikipedia.org/wiki/Regression_toward_the_mean)]
+
+---
+
+### What is a reasonable model?
+
+- If we believe that his skill doesn't change much year to year, use past data to inform prior
+
+- In his first 4 seasons combined Robert Covington made a total of 478 out of 1351 three point shots (0.35%, just below average).
+
+- Choose a Beta(478, 873) prior (pseudo-count interpretation)
+
+---
+
+### R. Covington 2017-2018 estimates
+
+.center[After 100 shots Robert Covington's 3PT% was <font color="#F8766D">0.49</font>]
+
+```{r, out.width="60%"}
+y <- 49
+n <- 100
+alpha <- 478
+beta <- 1351 - 478
+
+cov_plot <- ggplot(data.frame(x=rnorm(100)), aes(x)) + 
+  stat_function(fun=dbeta, args=list(y, n-y), aes(colour="Likelihood"), size=1.2) + #likelihood
+  stat_function(fun=dbeta, args=list(alpha, beta), aes(colour="Prior"), size=1.2) + #prior 
+  stat_function(fun=dbeta, args=list(alpha+y, beta+n-y), aes(colour="Posterior"), size=1.2) + #posterior
+  xlim(c(0.2, 0.7)) + theme_bw(base_size=24) + xlab("3PT%") + ylab("") + ggtitle("Likelihood, Prior, Posterior") + 
+  geom_vline(xintercept=y/n, linetype="dashed", colour=cols3[1], size=1.2) + 
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = c(0.8, 0.8),
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+cov_plot  
+
+
+```
+.center[MLE = 0.49, posterior mean = `r round((y + alpha)/(n + alpha + beta), 2)`]
+
+---
+
+### How did we do?
+
+.center[Robert Covington's end of season 3PT% was <font color="blue">0.37</font>]
+
+```{r, dependson=-1, out.width="60%"}
+cov_plot + geom_vline(xintercept=0.37, linetype="dashed", colour="blue", size=1.2)
+```
+.center[MLE = 0.49, posterior mean = `r round((y + alpha)/(n + alpha + beta), 2)`]
+
+---
+
+### The Poisson Distribution
+
+- A useful model for count data
+
+- Events occur independently at some rate $\lambda$
+
+- Mean = variance = $\lambda$.  
+
+- Example applications:
+    + Epidemiology (disease incidence)
+    + Astronomy (e.g. the number of meteorites entering the solar system each year)
+    + The number of patients entering the emergency room
+    + The number of times a neuron in the brain "fires"
+
+---
+
+### Poisson model
+
+ Assume $Y_1, ..., Y_n$ are $n$ i.i.d. observations from a $\text{Pois}(\lambda)$
+
+
+---
+
+### Poisson model with exposure
+
+- Often times we include an "exposure" term in the Poisson model:
+
+$$ p(y_i \mid \nu_i\lambda) = (\nu_i \lambda)^y e^{\nu_i \lambda} / y_i!$$
+
+- How many cars do we expect to pass an intersection in one hour? How many in two hours?
+    + If we model the distribution as Poisson, we expect twice as many in two hours as in one hours.
+
+- Homework: exposure is the length of the chapter
+
+---
+
+### Poisson model example
+
+- In a particular county 3 people out of a population of 100,000 died of asthma
+
+- Assume a Poisson sampling model with rate $\lambda$ (units are rate of deaths per 100,000 people)
+
+- How do we specify a prior distribution for $\lambda$?
+
+- How would our Bayesian estimate for $\lambda$ differ?
+
+---
+
+### Conjugate Prior for the Poisson Distribution
+
+Assume $n$ i.i.d observations of a $\text{Poisson}(\lambda)$
+
+$$
+\begin{aligned}
+p(\lambda \mid y_1, ... y_n) &\propto  L(\lambda) \times p(\lambda) \\
+&\propto  \lambda^{\sum y_i}e^{-n \lambda} \times p(\lambda)
+\end{aligned}
+$$
+
+- A prior distribution for $\lambda$ should have support on $\mathbb{R}^+$, the positive real line
+
+- Bayesian definition of sufficiency: $p(\lambda \mid s, y_1, ... y_n) = p(\lambda \mid s)$
+    + For the Poisson, $\sum y_i$ is sufficient
+
+- Can we find a density of the form $p(\lambda) \propto \lambda^{k_1} e^{k_2 \lambda}$?
+
+--
+
+- $\text{Gamma}(a, b) = \frac{b^a}{\Gamma(a)}\lambda^{a-1}e^{-b\lambda}$
+
+---
+
+### The Gamma distribution
+
+```{r, out.width="90%"}
+ig("images/gamma_densities.png")
+```
+
+---
+
+### The Gamma distribution
+
+Useful properties of the Gamma distribution:
+
+- $E[\lambda] = a/b$
+
+- $\text{Var}[\lambda] = a/b^2$
+
+- $\text{mode}[\lambda] = (a-1)/b$ if $a > 1$, $0$ otherwise
+
+- In R: `dgamma`, `rgamma`,  `pgamma`, `qgamma`
+
+---
+
+### The posterior in the Poisson-Gamma model
+
+Assume one observation with $y_i \sim \text{Pois}(\lambda \nu_i)$ where $\nu_i$ is the exposure
+
+$$\begin{aligned}
+p(\lambda \mid y_i) &\propto  L(\lambda) \times p(\lambda) \\
+&\propto  (\lambda \nu_i)^{y_i}e^{-\lambda\nu_i} \times \frac{b^a}{\Gamma(a)} \lambda^{a-1}e^{-b\lambda} \\
+&\propto  (\lambda)^{y_i + a -1}e^{-(b+\nu_i)\lambda}\\
+\end{aligned}$$
+
+$$p(\lambda \mid y, a, b) = \text{Gamma}(y_i + a, b + \nu_i)$$
+What is the posterior distribution for $n$ observations, $y_1$, ... $y_n$, with exposures $\nu_1$ ... $\nu_n$?
+
+
+---
+
+### Poisson model example
+
+- In a particular county 3 people out of a population of 100,000 died of asthma
+
+- Assume a Poisson sampling model with rate $\lambda$ 
+    + Units are rate of deaths per 100,000 people/year
+
+- Experts know that typical rates of asthma mortality in the US are closer to 0.6 per 100,000
+
+- Let's choose a Gamma distribution with a mean of 0.6 and appropriate uncertainty.
+
+---
+
+### Possible Gamma prior distributions
+
+```{r, out.width="60%"}
+
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rgamma(100, 3, 5)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Gamma(3, 5)"), size=1.2) +
+  stat_function(fun=dgamma, args=list(2*a, 2*b), aes(colour="Gamma(6, 10)"), size=1.2) +
+  stat_function(fun=dgamma, args=list(10*a, 10*b), aes(colour="Gamma(30, 50)"), size=1.2) + 
+  xlim(c(0, 3.3)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("Some prior distributions") + 
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols_sequential(3), limits=c("Gamma(3, 5)", "Gamma(6, 10)", "Gamma(30, 50)")) + 
+  theme(legend.position = c(0.5, 0.8),
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot  
+
+
+```
+
+---
+
+### Asthma Mortality 
+```{r, out.width="60%"}
+
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution"), size=1.2) +
+  stat_function(fun=function(l, x) dpois(x, l), args=list(3), aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 3, b + 1), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("Likelihood, Prior and Posterior") + ylim(c(0, 2)) +
+  geom_vline(xintercept=3, linetype="dashed", colour=cols3[1], size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = c(0.6, 0.8),
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+.center[Using Gamma(3, 5) prior distribution]
+
+---
+
+### The posterior mean
+
+$$
+\begin{aligned}
+E[\lambda \mid y_1, ... y_n] &= \frac{a + \sum y_i}{b + n}\\
+&= \frac{b}{b + n}\frac{a}{b} + \frac{n}{b + n}\frac{\sum y_i}{n}\\
+&= (1-w)\frac{a}{b} + w\hat \lambda_{\text{MLE}}\\
+\end{aligned}
+$$
+
+- $w \to 1$ as $n \to \infty$ (data dominates prior)
+                                                                                                                                         
+- $b$ can be interpreted as the number of _prior_ observations 
+    + Analogous to $n$ or total prior exposure
+
+- $a$ can be interpreted as the sum of the counts from prior total exposure of $b$
+    + Analogous to $\sum_i y_i$
+
+---
+
+### Asthma Mortality
+
+- Suppose that nine additional years of data are obtained for the city
+
+- The mortality rate of 3 per 100,000 is maintained: we find y = 30 deaths over 10 years.
+
+- How has the posterior distribution changed?
+
+--
+
+- Two related approaches: use "all at once approach" or assume "Bayesian updating"
+
+---
+
+### Asthma Mortality (''All At Once'' Approach)
+```{r, out.width="60%"}
+
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution"), size=1.2) +
+  stat_function(fun=function(x) dpois(30, 10*x)*10, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 30, b + 10), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("Likelihood, Prior and Posterior") + ylim(c(0, 2)) + 
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+.center[Using Gamma(3, 5) prior distribution]
+
+---
+
+### Asthma Mortality (''All At Once'' Approach)
+
+After 20 years we've see 50 deaths...
+
+```{r, out.width="60%"}
+
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution"), size=1.2) +
+  stat_function(fun=function(x) dpois(50, 20*x)*10, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 50, b + 20), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("Likelihood, Prior and Posterior") + ylim(c(0, 2)) + 
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+---
+
+### Asthma Mortality (''All At Once'' Approach)
+
+After 30 years we've see 75 deaths...
+
+```{r, out.width="60%"}
+
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution"), size=1.2) +
+  stat_function(fun=function(x) dpois(75, 30*x)*20, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 75, b + 30), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("Likelihood, Prior and Posterior") + ylim(c(0, 2)) + 
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+---
+
+### Asthma Mortality (Updating)
+
+.center[Perspective of continous "updating" of the posterior distribution]
+
+```{r, out.width="80%", fig.width=10}
+a <- 3
+b <- 5
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution"), size=1.2) +
+  stat_function(fun=function(l, x) dpois(x, l), args=list(3), aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 3, b + 1), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ggtitle("3 deaths in year 1") + ylim(c(0, 2)) +
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+---
+
+### Asthma Mortality (Continuous Updating)
+
+.left[Prior mean, previous data (3+3)/(5+1) = 1]
+.left[New data: 27 deaths in 9 more years, 27/9 = 3]
+
+```{r, out.width="80%", fig.width=10}
+a <- 3 + 3
+b <- 5 + 1
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution\n (from previous obs)"), size=1.2) +
+  stat_function(fun=function(x) dpois(27, 9*x)*10, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 27, b + 9), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ylim(c(0, 2)) +
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+---
+
+### Asthma Mortality (Continuous Updating)
+
+.left[New ``prior'' mean 33/15 = 2.2]
+.left[New data, 20 deaths in 10 more years 20/10 = 2]
+
+```{r, out.width="80%", fig.width=10}
+a <- 3 + 30
+b <- 5 + 10
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution\n (from previous obs)"), size=1.2) +
+  stat_function(fun=function(x) dpois(20, 10*x)*10, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 20, b + 10), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("")  + ylim(c(0, 2)) +
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+
+
+---
+
+
+### Asthma Mortality
+
+.left[New ``prior'' mean 53/25 = 2.12]
+.left[New data, 25 deaths in 10 more years 25/10 = 2.5]
+
+```{r, out.width="80%", fig.width=10}
+a <- 3 + 50
+b <- 5 + 20
+
+asthma_plot <- ggplot(data.frame(x=rpois(100, 3)), aes(x)) + 
+  stat_function(fun=function(x, a, b) dgamma(x, a, b), args=list(a, b), aes(colour="Prior Distribution\n (from previous obs)"), size=1.2) +
+  stat_function(fun=function(x) dpois(25, 10*x)*10, aes(colour="Likelihood"), size=1.2) +
+  stat_function(fun=dgamma, args=list(a + 25, b + 10), aes(colour="Posterior"), size=1.2) + 
+  xlim(c(0, 4)) + theme_bw(base_size=24) + xlab("Asthma Mortality Rate (per 100,000)") + ylab("") + ylim(c(0, 2)) +
+  geom_vline(xintercept=3, linetype="dashed", colour="black", size=1.2) +
+  scale_colour_manual(name="", values=cols3) + 
+  theme(legend.position = "top",
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+asthma_plot
+```
+
+---
+
+### Summary
+
+- The Beta distribution
+  + Conjugate prior for Binomial likelihood
+
+- The Gamma distribution 
+  + Conjugate prior for the Poisson likelihood
+
+- Pseudo-counts interpretations of conjugate prior distributions
+
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+```
