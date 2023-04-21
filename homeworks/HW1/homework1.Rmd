@@ -38,12 +38,17 @@ Model: let $Y_i$ denote the quantity that captures the number of times the word 
 
 Write the likelihood $L(\lambda)$ for a generic sample of $n$ chapters, $(y_1,...,y_n)$. Simplify as much as possible (i.e. get rid of any multiplicative constants)  
 
+
 ## 1b. (5 pts)
 
 Write the log-likelihood $\ell(\lambda)$ for a generic sample of $n$ articles, $(y_1,...,y_n)$.  Simplify as much as possible.  Use this to compute the maximum likelihood estimate for the rate parameter of the Poisson distribution.    
 
 From now on, we'll focus on JKR's writing style in the first Harry Potter book, _Philosopher's Stone_.  This book has 17 chapters. Below is the code for counting the number of times _stone_ appears in each chapter of _Philosopher's Stone_ .  We use the `tidytext` R package which includes functions that parse large text files into word counts.  The code below creates a vector of length 17 which has the number of times the word _stone_ was used in that chapter (see https://uc-r.github.io/tidy_text for more on parsing text with `tidytext`)
     
+```{r}
+install.packages("devtools")
+devtools::install_github("bradleyboehmke/harrypotter")
+```
 ```{r parse_text}
 library(tidyverse)      # data manipulation & plotting
 library(stringr)        # text cleaning and regular expressions
@@ -52,6 +57,8 @@ library(harrypotter)    # text for the seven novels of the Harry Potter series
 
 text_tb <- tibble(chapter = seq_along(philosophers_stone),
                   text = philosophers_stone)
+
+
 tokens <- text_tb %>% unnest_tokens(word, text)
 word_counts <- tokens %>% group_by(chapter) %>% 
   count(word, sort = TRUE) %>% ungroup
@@ -64,10 +71,19 @@ stone_counts <- word_counts_mat$stone
 
 Make a bar plot where the heights are the counts of the word _stone_ and the x-axis is the chapter.  
 
+```{r}
+head(stone_counts)
+names(stone_counts) <- c(1:17)
+barplot(stone_counts)
+```
+
 
 ## 1d. (10 pts)
 Plot the log-likelihood of the Poisson rate of _stone_ usage in R using the data in `stone_counts`.  Then use `stone_counts` to compute the maximum likelihood estimate of the rate of the usage of the word _stone_ in Philosopher's Stone.  Mark this maximum on the log-likelihood plot with a vertical line (use `abline` if you make the plot in base R or `geom_vline` if you prefer `ggplot`).  
 
+```{r}
+
+```
 
 
 # Question 2
