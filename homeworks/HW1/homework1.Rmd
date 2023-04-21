@@ -82,7 +82,19 @@ barplot(stone_counts)
 Plot the log-likelihood of the Poisson rate of _stone_ usage in R using the data in `stone_counts`.  Then use `stone_counts` to compute the maximum likelihood estimate of the rate of the usage of the word _stone_ in Philosopher's Stone.  Mark this maximum on the log-likelihood plot with a vertical line (use `abline` if you make the plot in base R or `geom_vline` if you prefer `ggplot`).  
 
 ```{r}
+lambda = seq(0,10,0.1)
+ln_lambda = log(lambda, exp(1))
+total_stone = sum(stone_counts)
+ln_product = log((prod(factorial(stone_counts))), exp(1))
+n = length(stone_counts)
 
+likelihood = -n*lambda+ln_lambda*total_stone-ln_product
+
+log.likelihood <- data.frame(x=lambda, y = likelihood)
+
+
+log.likelihood %>% ggplot(aes(x=x, y = y)) +
+    geom_line()
 ```
 
 
