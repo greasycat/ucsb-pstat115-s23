@@ -291,9 +291,6 @@ ig("images/age_guess.jpg")
   
 - Goal:
   + Be well calibrated. 50% of your intervals should contain the true answer.
-  
-- This counts toward your quiz participation grade
-  
 
 ---
 
