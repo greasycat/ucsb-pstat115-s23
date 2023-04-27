@@ -1,0 +1,12 @@
+/* Default background colour, and font size */
+
+.remark-slide-content{
+  font-size: 150%;    /* Regular text */
+  /* padding-left: 100px; */
+  /* padding-right: 100px;                      */
+}
+
+.title-slide {
+  background-image: none;
+  background-size: cover;
+}

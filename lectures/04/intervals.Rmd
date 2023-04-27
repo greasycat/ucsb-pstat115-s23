@@ -1,0 +1,788 @@
+---
+title: 'Intervals and Predictive Distributions'
+author: "Professor Rodrigo Targino"
+output:
+  xaringan::moon_reader:
+    css: ['default', "xaringan_style.css"]
+---
+
+```{r, echo=FALSE, warning=FALSE}
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+suppressPackageStartupMessages(library(tidyverse))
+opts_chunk$set(echo=FALSE, fig.align='center', out.width="60%") 
+knitr::opts_chunk$set(dpi=300, fig.width=7)
+#options("kableExtra.html.bsTable" = T)
+ig <- function(file) {knitr::include_graphics(file)}
+source("../scripts/make_figs.R")
+source("../scripts/color_defs.R")
+
+```
+
+### Announcements
+
+- Reading: Chapters 8.1 (intervals) and 8.3 (posterior prediction) Bayes Rules
+
+- Homework 2 due May 5, at 11:59pm
+
+---
+
+### Reminder: Frequentist confidence interval
+
+- Frequentist interval: $Pr(l(Y) < \theta < u(Y)\mid \theta) = 0.95$
+
+    +  Probability that the interval will cover the true value _before_ the data are observed. 
+    
+    + Interval is random since $Y$ is random
+
+---
+
+### Reminder: Frequentist confidence interval
+
+```{r, out.width='60%'}
+par(cex=1.5)
+prob <- 0.6
+nintervals <- 50
+sz <- 20
+counts <- rbinom(n=nintervals, size=sz, prob=prob)
+phat <- counts / sz
+
+lower <- phat - 1.96 * sqrt(phat * (1-phat) / sz)
+upper <- phat + 1.96 * sqrt(phat * (1-phat) / sz)
+
+plot(0, 0, ylim=c(-1, nintervals + 1), xlim=c(0, 1), cex=0, xlab=expression(theta), ylab="")
+segments(x0=lower, x1=upper, y0=1:nintervals, y1=1:nintervals, col=ifelse(upper < prob | lower > prob, cols2[1], "grey"), lwd=3)
+abline(v=prob, col=cols2[2])
+
+```
+
+.center[We expect 0.05 x 50 = 2.5 will _not_ cover the true parameter 0.6]
+
+---
+
+### Posterior Credible Intervals
+
+- Frequentist interval: $Pr(l(Y) < \theta < u(Y)\mid \theta) = 0.95$
+
+    +  Probability that the interval will cover the true value _before_ the data are observed. 
+    
+    + Interval is random since $Y$ is random
+
+--
+    
+- **Bayesian Interval**: $Pr(l(y) < \theta < u(y) \mid Y=y) = 0.95$
+    
+    +  Information about the the true value of $\theta$ _after_ observeing $Y = y$.
+    
+    + $\theta$ is random (because we include a prior), $y$ is observed so interval is non-random.  
+
+---
+
+### Posterior Credible Intervals (Quantile-based)
+
+- The easiest way to obtain a confidence interval is to use the quantiles of the posterior distribution.
+
+If we want $100 \times (1 - \alpha)%$ interval, we find numbers $\theta_{\alpha / 2}$ and $\theta_{1-\alpha/2}$ such that:
+
+1. $p(\theta \lt \theta_{\alpha/2} \mid Y=y) = \alpha/2$
+
+2. $p(\theta \gt \theta_{1-\alpha/2} \mid Y=y) = \alpha/2$
+
+$$p(\theta \in [\theta_{\alpha/2}, \theta_{1-\alpha/2}] \mid Y=y) = 1 - \alpha$$
+
+- Use quantile functions in R, e.g. `qbeta`, `qpois`, `qnorm` etc.  
+
+---
+
+### Example: interval for shooting skill in basketball
+
+- The posterior distribution for Covington's shooting percentage is a $$\text{Beta}(49 + 478, 50 + 873) = \text{Beta}(528, 924)$$
+
+- For a 95% _credible_ interval, $\alpha = 0.05$
+   + Lower endpoint: `qbeta(0.025, 528, 924)`
+   + Upper endpoint: `qbeta(0.975, 528, 924)`
+   +  $[\theta_{\alpha/2}, \theta_{1-\alpha/2}]$ =  [`r round(qbeta(0.025, 528, 924), 2)`, `r round(qbeta(0.975, 528, 924), 2)`]
+
+--
+
+- Compared to frequentist _confidence_ interval without prior information: [`r round(0.49 - 1.96*sqrt((0.49 * (1-0.49))/100), 2)`, `r round(0.49 + 1.96*sqrt((0.49 * (1-0.49))/101), 2)`]
+
+- End-of-season percentage was $0.37$
+
+- Credible intervals and confidence intervals have different meanings!
+
+---
+
+### Highest Posterior Density (HPD) region
+
+**Definition: (HPD region)** A $100  \times (1 − \alpha)%$ HPD region consists of a subset of the parameter space, $R(y) \in \Theta$  such that
+
+1. $\text{Pr}(\theta \in R(y) | Y = y ) = 1 - \alpha$
+
+   - The probability that $\theta$ is in the HPD region is $1 - \alpha$
+
+--
+
+2. $\text{If }\theta_{a} \in R(y) , \text{ and } \theta_{b} \notin R(y) , \text{ then } p\left( \theta_{ a } | Y = y \right) > p \left( \theta_{ b } | Y = y \right)$
+
+   - All points in an HPD region have a higher posterior density than points out- side the region.
+
+The HPD region can be discontinuous (hence "region")
+
+---
+
+### Highest Posterior Density (HPD) region
+
+1. $p(\theta \in s(y) \mid Y = y) =1- \alpha$
+
+2. If $\theta_a \in s(y)$, and $\theta_b \not \in s(y)$, then $p(\theta_a \mid Y=y) \gt p(\theta_b \mid Y = y)$.
+    
+    - All points in an HPD region have a higher posterior density than points out- side the region.
+
+<br>
+
+.center[The  HPD region is the _smallest_ region with probability `\\((1 - \alpha)\\)`% ]
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+library("HDInterval")
+data <- c(rgamma(1e5, 3, 3), rgamma(1e5, 20, 2))
+
+compute_hpd = function(alpha, data){
+  dens <- density(data)
+  plot(dens, lwd=2, typ="l", xlab=expression(theta), ylab= "Posterior density", 
+       main = bquote("HPD with " ~ alpha == .(alpha)))
+  
+  hdiD2 <- hdi(dens, allowSplit=TRUE, credMass = 1-alpha)
+  ht <- attr(hdiD2, "height")
+  
+  segments(hdiD2[, 1], ht, hdiD2[, 2], ht, lwd=3, col='red')
+}
+
+alpha = 0.75
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+alpha = 0.6
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+alpha = 0.5
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+alpha = 0.25
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+alpha = 0.1
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Highest Posterior Density (HPD) region
+
+```{r, out.width='60%'}
+alpha = 0.05
+
+compute_hpd(alpha, data)
+```
+
+---
+
+### Calibration: Frequentist Behavior of Bayesian Intervals
+
+<br>
+
+- A credible interval is calibrated if it has the right frequentist coverage
+
+- Bayesian credible intervals usually won't have correct coverage
+
+- If our prior was well-calibrated and the sampling model was correct, we'd have well-calibrated credible intervals
+
+- Specifying _nearly_ calibrated prior distributions is hard!
+
+---
+
+### Calibration of MLB predictions
+
+<br>
+<br>
+
+```{r, out.width="85%"}
+ig("images/538_calibration1.png")
+```
+.center[source: https://projects.fivethirtyeight.com/checking-our-work/]
+
+---
+
+### Calibration of MLB predictions
+
+```{r, out.width="60%"}
+ig("images/538_calibration1_2.png")
+```
+.center[source: https://projects.fivethirtyeight.com/checking-our-work/]
+
+---
+### Calibration of political predictions
+
+<br>
+
+```{r, out.width="85%"}
+ig("images/538_calibration2.png")
+```
+.center[source: https://fivethirtyeight.com/features/when-we-say-70-percent-it-really-means-70-percent/]
+
+---
+
+### The age guessing game*
+
+<br>
+
+```{r, out.width='35%'}
+ig("images/age_guess.jpg")
+# Guess Prof Franks' age to the nearest (months)
+
+###Suppose I told you I'm between 10 and 50.
+### Suppose I told you I'm between 30 and 33 y/o? (360 and 396
+
+
+```
+
+.center[ *Bayesian edition]
+
+---
+
+### Interval Trivia
+
+- I'm going to ask you ten questions about random facts
+
+- For each, write down a 50% credible interval for _your_ belief about the answer
+  
+- Goal:
+  + Be well calibrated. 50% of your intervals should contain the true answer.
+
+---
+
+### Percentage in California
+```{r, out.width="70%"}
+ig("images/california.png")
+```
+
+.center[What fraction of the US population is living in California?]
+
+---
+
+### Olympic Swimming Pool
+
+```{r, out.width="80%"}
+ig("images/pool.jpeg")
+```
+
+.center[How many gallons of water are there in an olympic swimming pool?]
+
+---
+
+### Household Income
+
+<br>
+
+```{r, out.width="80%"}
+ig("images/householdincome.jpg")
+```
+
+<br>
+
+.center[What is the median household income in the US (dollars)?]
+
+---
+
+### Grooves on a quarter
+
+<br>
+
+```{r, out.width="80%"}
+ig("images/quarter.jpeg")
+```
+
+.center[How may grooves are there on the edge of quarter?]
+
+
+---
+
+### Gold in Fort Knox
+
+<br>
+
+```{r, out.width="70%"}
+ig("images/gold.jpg")
+```
+
+.center[How many pounds of gold are there Fort Knox?]
+
+---
+
+### Population of Australia
+
+```{r, out.width="55%"}
+ig("images/australia.png")
+```
+
+.center[What is the population of Australia (in millions)?]
+
+---
+
+### Tallest tsunami wave ever recorded
+
+<br>
+
+```{r}
+ig("images/tsunami.jpg")
+```
+
+.center[How tall was the tallest tsunami wave ever recorded (in feet)?]
+
+---
+
+### Disney world
+
+<br>
+
+```{r}
+ig("images/disney.jpg")
+```
+
+.center[In what year did Disneyland Park open to the public?]
+
+---
+
+### Jupiter
+
+<br>
+
+```{r}
+ig("images/jupiter.jpg")
+```
+
+.center[How many times larger in volume is Jupiter than Earth?]
+
+---
+
+### Netflix
+
+<br>
+
+```{r}
+ig("images/netflix.png")
+```
+
+.center[In what year was Netflix founded?]
+
+---
+
+###  All questions
+
+```{r}
+questions <- c("What fraction of the US population is living in California?",
+  "How many gallons of water are there in an olympic swimming pool?",
+  "What is the median household income in the US (dollars)?",
+  "How many grooves are there on the edge of quarter?",
+  "How many pounds of gold are there in Fort Knox?",
+  "What is the population of Australia (in millions)?",
+  "How tall was the tallest tsunami wave ever recorded (in feet)? ", 
+  "In what year did Disneyland open to the public?",
+  "How many times larger in volume, is Jupiter than Earth?",
+  "In what year was Netflix founded?")
+lower <- upper <- rep("______", length(questions))
+
+kable(tibble(N=paste0("Q",1:10), Question=questions, lower=lower, upper=upper)) %>% kable_styling(font_size = 16)
+
+```
+
+---
+
+###  Answers
+```{r}
+Answers <- c("12%", "660,000", "$70,784", "119", "9,206,250", "25.89 mil", "1700 feet", "1955", "1,321.33", "1997")
+
+kable(tibble(N=paste0("Q",1:10), Question=questions, Answers=Answers)) %>% kable_styling(font_size = 16)
+```
+
+---
+
+###  References
+```{r}
+references <- c("https://www.census.gov/library/stories/state-by-state/california-population-change-between-census-decade.html",
+  "https://healingpicks.com/how-many-gallons-are-in-an-olympic-size-swimming-pool/",
+  "https://www.census.gov/library/visualizations/2022/comm/median-household-income.html",
+  "https://www.icpl.org/articles/why-does-quarter-have-119-ridges",
+  "https://www.usmint.gov/about/mint-tours-facilities/fort-knox",
+  "https://www.abs.gov.au/statistics/people/population",
+  "https://www.pbs.org/wgbh/nova/tsunami/once-nf.html", 
+  "https://www.history.com/this-day-in-history/disneyland-opens",
+  "https://www.space.com/18392-how-big-is-jupiter.html",
+  "https://en.wikipedia.org/wiki/Netflix")
+
+kable(tibble(N=paste0("Q",1:10), References=references)) %>% kable_styling(font_size = 16)
+```
+
+---
+### Calibrated probability intervals
+
+- Calibration is important but only part of the story!
+
+- Want well calibrated but _small_ intervals (big intervals tell us nothing)
+
+- How you could have gotten a perfect score on the quiz:
+
+  + For 5 of the answers select [-1 Trillion, +1 Trill] (ensures it will cover)
+  + For the other 5 answers select[-0.01, + 0.01] (ensures it won't cover)
+
+--
+
+- Domain expertise helps us develop smaller prior distributions (calibration?)
+    
+  + Usually at the cost of calibration
+  + My experience: people tend to be overconfident
+  + Alternatives to domain expertise?
+
+---
+
+### Subjective Bayesianism
+
+- So far we have focused on defining priors using domain expertise
+
+- "Subjective" Bayes
+
+    + Essentially what we have discussed so far
+
+    + Priors usually represent subjective judgements can't always be rigorously justified 
+    
+- Alternative: "objective" Bayes
+
+---
+
+### Objective Bayesianism
+
+- Is there a way to define "objective" prior distributions?
+  
+  + Good default prior distributions for some problems?
+  
+  + "Non-informative" prior distributions?
+
+- Also called "reference" or "default" priors
+
+--
+
+- Can we find prior distributions that lead to (approximately) correct frequentist calibration?
+
+- Can we find prior distributions which minimize the amount of information contained in the distribution?
+
+  + Principle of maximum entropy (MAXENT).
+     
+---
+
+
+
+### Difficulties with non-informative priors
+
+.center[Uniform distribution for p]
+
+```{r, echo=TRUE, fig.width=7, fig.height=5}
+p <- runif(100)
+tibble(p=p) %>% ggplot() + 
+  geom_histogram(aes(x=p), bins=30) +
+  theme_bw(base_size=24)
+```
+
+---
+
+### Difficulties with non-informative priors
+
+.center[Implied distribution for odds = p/(1-p)]
+
+```{r, echo=TRUE, warning=FALSE, message = FALSE, fig.width=7, fig.height=5}
+odds <- p/(1-p)
+tibble(odds=odds) %>% ggplot() + 
+  geom_histogram(aes(x=odds)) + 
+  theme_bw(base_size=24)
+```
+---
+
+## Improper prior distributions
+- For the Beta distribution we chose a uniform prior $-$ e.g. $p(\theta) \propto   \text{const}$.  This was ok because
+
+  + $\int_0^1 p(\theta) d\theta = \text{const} < \infty$
+
+  + We say this prior distribution is _proper_ because it is integrable
+    
+- For the Poisson distribution, try the same thing: $p(\lambda) \propto \text{const}$
+    + $\int_{0}^{\infty} p(\lambda) d\lambda = \infty$
+    + In this case we say $p(\lambda)$ is an _improper_ prior
+
+---
+
+## Improper prior distributions
+- In the Poisson case, let us pretend the prior for $\lambda$ is proper...
+$$p(\lambda \mid y) \propto \phantom{.......................................................................................}$$
+---
+
+## Improper prior distributions
+
+- Sometimes there is an absence of precise prior information
+
+- The prior distribution does not have to be proper but the posterior does!
+
+    + A proper distribution is one with an integrable density
+
+    + If you use an improper prior distribution, you need to check that the posterior distribution is also proper
+
+
+---
+
+layout: false
+class: middle, center
+background-image: none;
+
+# Posterior Predictive Distributions
+
+
+
+---
+
+### Posterior predictive distribution
+
+- An important feature of Bayesian inference is the existence of a predictive distribution for new observations.
+  
+    + Let $\tilde y$ be a new (unseen) observation, and $y_1, ... y_n$ the observed data.
+  
+    + The posterior predictive distribution is $p(\tilde y \mid y_1, ... y_n)$
+
+--
+
+- The predictive distribution does not depend on unknown parameters
+
+- The predictive distribution only depends on observed data
+
+- Asks: what is the probability distribution for new data given observations of old data?
+
+---
+
+### Another Basketball Example
+
+- I take free throw shots and make 1 out of 2.  How many do you think I will make if I take 10 more?
+
+- If my true "skill" was 50%, then $\tilde Y \sim \text{Bin}(10, 0.50)$ 
+
+- Is this the correct way to calculate the predictive distribution?
+
+
+---
+
+### Posterior Prediction
+
+If you know $\theta$, then we know the distribution over future attempts:
+$$\tilde Y \sim \text{Bin}(10, \theta)$$
+
+```{r, warning=FALSE, out.width="80%", fig.width=10}
+
+library("RColorBrewer")
+
+nobs <- 2
+yobs <- 1
+
+npred <- 10
+
+alpha <- 1
+beta <- 3
+
+theta_grid <- seq(0.1, 0.9, by=0.1)
+weight <- dbeta(theta_grid, yobs + alpha, nobs - yobs + beta)
+weight <- weight / sum(weight)
+tib <- tibble(x=rep((0:npred)/npred, length(theta_grid)), 
+             density=dbinom(npred*x, npred, rep(theta_grid, each=npred+1)), 
+            theta=factor(rep(theta_grid, each=npred + 1)),
+            weight = rep(weight, each=npred+1))
+        
+tib %>%
+  ggplot() + 
+  geom_line(aes(x=10*x, y=density, colour=theta), size=1.1) + 
+  xlim(c(0, 10)) + theme_bw(base_size=24) + xlab("Makes") + ylab("") + scale_colour_manual(values = rev(brewer.pal(9,"RdBu"))) +
+  theme(legend.position="bottom")
+```
+
+---
+
+### Posterior Prediction
+
+- We already observed 1 make out of 2 tries.
+
+- Assume a Beta(1, 3) prior distribution 
+
+  + e.g. a priori you think I'm more likely to make 25% of my shots
+
+- Then $p(\theta \mid Y=1, n=2)$ is a $\text{Beta}(2, 4)$
+
+- Intuition: weight $\tilde Y \sim \text{Bin}(10, \theta)$ by $p(\theta \mid Y=1, n=2)$
+
+---
+
+### Posterior Prediction
+
+.center[If I take 10 more shots how many will I make?]
+
+```{r, dependson=-1, out.width="80%", fig.width=10}
+  tib %>%
+  ggplot() + 
+  geom_line(aes(x=10*x, y=weight*density, colour=theta), size=1.1) + 
+  xlim(c(0, 10)) + theme_bw(base_size=24) + xlab("Makes") + ylab("") + 
+  scale_colour_manual(values = rev(brewer.pal(9,"RdBu"))) + 
+  theme(legend.position="bottom")
+```
+
+---
+
+### Posterior Predictive Distribution
+
+$$p(\theta) = \text{Beta}(1, 3), p(\theta \mid y) = \text{Beta}(2, 4)$$
+
+```{r, dependson=-3, warning=FALSE, out.width="50%"}
+library("RColorBrewer")
+nobs <- 2
+yobs <- 1
+
+npred <- 10
+
+# alpha <- 2
+# beta <- 2
+
+###alpha <- 1
+###beta <- 1
+
+dbetabinom <- function(x) {exp(lchoose(npred, x) + lbeta(x + alpha + yobs, npred - x + beta + nobs-yobs) - lbeta(alpha + yobs, beta + nobs-yobs))}
+
+tibble(x=(0:npred)/npred, Predictive = dbetabinom(npred*x),
+                              `Bin(10, 0.5)` = dbinom(npred*x, npred, yobs/nobs)) %>%
+  gather(key=Type, value=Height, -x) %>%
+  ggplot() + 
+  geom_line(aes(x=10*x, y=Height, colour=Type), size=1.1) + 
+  xlim(c(0, 10)) + theme_bw(base_size=24) + xlab("Makes") + ylab("") +
+  theme(legend.position = c(0.8, 0.8),
+        legend.background = element_rect(fill = alpha("white", 0)))
+
+```
+The predictive density, $p(\tilde y \mid y)$, answers the question "if I take 10 more shots how many will I make, given that I already made 1 of 2".
+
+---
+
+### The posterior predictive distribution
+
+$$\begin{aligned}
+p(\tilde y \mid y_1, ... y_n) &= \int p(\tilde y, \theta \mid y_1, ... y_n) d\theta\\
+&=\int p(\tilde y \mid \theta) p(\theta  \mid y_1, ... y_n) d\theta
+\end{aligned}$$
+
+- The posterior predictive distribution describes our uncertainty about a new observation after seeing $n$ observations
+
+- It incorporates uncertainty due to the sampling in a model $p(\tilde y \mid \theta)$ _and_ our posterior uncertainty about the data generating parameter, $p(\theta \mid y_1, ... y_n)$
+
+
+---
+### Posterior Predictive Density
+
+<br>
+
+```{r, out.width="80%"}
+ig("images/central_dogma_inference.png")
+```
+
+
+---
+
+### The prior predictive distribution
+
+$$\begin{aligned} p(\tilde y) &= \int p(\tilde y, \theta) d\theta\\ &=\int p(\tilde y \mid \theta) p(\theta) d\theta \end{aligned}$$
+
+- The prior predictive distribution describes our uncertainty about a new observation before seeing data
+
+--
+
+- It incorporates uncertainty due to the sampling in a model $p(\tilde y \mid \theta)$ _and_ our prior uncertainty about the data generating parameter, $p(\theta)$
+
+---
+
+### Homework 1
+
+- $\lambda \sim \text{Gamma}(\alpha, \beta)$
+
+- $\tilde Y \sim \text{Pois}(\lambda)$
+
+-  $p(\tilde y) = \int p(\tilde y \mid \lambda) p(\lambda) d\lambda$ is a prior predictive distribution!
+
+- "A Gamma-Poisson mixture is a Negative-Binomial Distribution"
+
+---
+
+### Homework 1
+
+$$\begin{aligned}
+p(\tilde y) &= \int p(\tilde y \mid \lambda) p(\lambda) d\lambda\\
+&= \int (\frac{\lambda^{\tilde y}}{y!}e^{-\lambda})(\frac{\beta^\alpha}{\Gamma(\alpha)}\lambda^{(\alpha-1)}e^{-\beta\lambda}) d\lambda\\
+&= \frac{\beta^\alpha}{\Gamma(\alpha)y!}\int (\lambda^{(\alpha+y-1)}e^{-(\beta+1)\lambda}) d\lambda\\
+\end{aligned}$$
+
+$\int (\lambda^{(\alpha+y-1)}e^{-(\beta+1)\lambda}) d\lambda$ looks like an unormalized $\text{Gamma}(\alpha+y, \beta + 1)$
+
+
+---
+
+### Summary
+
+
+- Bayesian credible intervals
+
+     + Posterior probability that the value falls in the interval
+     + Still strive for well-calibrated intervals (in the frequentist sense)
+
+- Non-informative prior distributions
+
+- Posterior predictive distributions
+     + Estimated distribution for new data  our uncertainty about the parameters
+     
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+```
