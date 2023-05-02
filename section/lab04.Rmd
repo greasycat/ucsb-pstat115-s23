@@ -1,0 +1,87 @@
+---
+title: "Lab 4"
+author: "PSTAT 115, Winter 2022"
+date: "January 25, 2022"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+urlcolor: blue
+header-includes:
+ \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo=TRUE, 
+                      cache=FALSE, 
+                      fig.width=5, 
+                      fig.height=5,
+                      fig.align='center',
+                      fig.pos = 'H')
+library(tidyverse)
+library(ggplot2)
+```
+
+# Objectives
+- Useful integral trick
+- Computing probability intervals with quantile functions 
+- Posterior credible intervals 
+- HPD intervals 
+- Posterior predictive distribution
+
+# Integral trick (Gamma integral example) 
+
+Let $K = \int L(\lambda; y)p(\lambda) d\lambda$ be the integral of the proportional posterior.  Then the proper posterior density, i.e. a true density integrates to 1, can be expressed as $p(\lambda \mid y) = \frac{L(\lambda; y)p(\lambda)}{K}$.  Compute this posterior density and clearly express the density as a mixture of two gamma distributions. 
+
+$$K=\int{e^{-1767  \lambda}   \lambda ^ 8 ( \frac{2000^3}{\Gamma(3)} \lambda^{2} e^{-2000  \lambda} +  \frac{1000^7}{\Gamma(7)} \lambda^{6} e^{-1000  \lambda}}) d\lambda$$
+$$ = \int \frac{2000^3}{\Gamma(3)} \lambda^{10} e^{-3767\lambda} d\lambda + \int \frac{1000^7}{\Gamma(7)}\lambda^{14}e^{-2767\lambda} d\lambda$$
+$$ = \frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}+\frac{1000^7}{\Gamma(7)} \frac{\Gamma(15)}{2767^{15}}$$
+$$ p(\lambda |y) = \frac{\frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}}{\frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}+\frac{1000^7}{\Gamma(7)} \frac{\Gamma(15)}{2767^{15}}}*\frac{3767^{11}}{\Gamma(11)}\lambda^{10} e^{-3767\lambda}+\frac{\frac{1000^7}{\Gamma(7)} \frac{\Gamma(15)}{2767^{15}}}{\frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}+\frac{1000^7}{\Gamma(7)} \frac{\Gamma(15)}{2767^{15}}}*\frac{2767^{15}}{\Gamma(15)}\lambda^{14} e^{-2767\lambda}$$
+$$ := wp_U(\lambda)+(1-w)p_V(\lambda)$$
+where
+$$ w=\frac{\frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}}{\frac{2000^3}{\Gamma(3)} \frac{\Gamma(11)}{3767^{11}}+\frac{1000^7}{\Gamma(7)} \frac{\Gamma(15)}{2767^{15}}}, U\sim Gamma(11,\frac 1 {3767}), V \sim Gamma(15,\frac 1 {2767}) $$
+which means that the posterior density is a mixture of two gamma distributions.
+
+# Computing probability intervals with quantile functions
+
+```{r, echo=FALSE}
+library(jpeg)
+include_graphics('../labs/lab4images/credible.JPG')
+```
+
+In addition to point summaries, it is nearly always important to report posterior uncentainty. Therefore, as in conventional statistics, an interval summary is desirable. A central interval of posterior probability, which corresponds, in the case of a $100(1-\alpha) \%$ interval, to the range of values above and below which lies exactly $100(\alpha/2)\%$ of the posterior probability.
+
+* What is the 95\% central interval of the above posterior distribution?
+```{r}
+a_post = 1 + 43
+b_post = 1 + 98 - 43
+alpha = 1 - 0.95
+low = qbeta(alpha/2, a_post, b_post)
+high = qbeta(1 - alpha/2, a_post, b_post)
+print(c(low, high))
+```
+
+* Visualize the above central interval
+```{r}
+curve(gamma(a_post + b_post)/gamma(a_post)/gamma(b_post) *
+      p^(a_post - 1) * (1-p)^(b_post - 1), from = 0, to = 1, xname = "p", 
+      xlab = "p", ylab = "density")
+abline(v = low, col = "red", lty = 2)
+abline(v = high, col = "red", lty = 2)
+```
+
+* How to interpret this central interval?
+
+# Highest posterior density region (HPD) 
+
+```{r, echo=FALSE}
+include_graphics('../labs/lab4images/hpd.JPG')
+include_graphics('../labs/lab4images/credible_vs_hpd.JPG')
+```
+
+# Posterior predictive distribution 
+
+```{r, echo=FALSE}
+#include_graphics('../labs/lab4images/ppd.JPG')
+```
