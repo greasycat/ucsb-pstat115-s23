@@ -1,0 +1,656 @@
+---
+title: 'Monte Carlo Methods'
+author: "Professor Rodrigo Targino"
+output:
+  xaringan::moon_reader:
+    css: ['default', "xaringan_style.css"]
+---
+
+```{r, echo=FALSE, warning=FALSE}
+library(knitr)
+library(ggplot2)
+library(kableExtra)
+library(patchwork)
+suppressPackageStartupMessages(library(tidyverse))
+opts_chunk$set(echo=FALSE, fig.align='center', out.width="60%") 
+knitr::opts_chunk$set(dpi=300, fig.width=7)
+options("kableExtra.html.bsTable" = T)
+ig <- function(file) {knitr::include_graphics(file)}
+source("../scripts/make_figs.R")
+source("../scripts/color_defs.R")
+```
+
+### Posterior inference for arbitrary functions
+
+- Assume that $Y \sim \text{Bin}(n, \theta)$ but that you are interested in the log odds:
+
+$$\gamma = \log \operatorname { odds } ( \theta ) = \log \frac { \theta } { 1 - \theta }$$
+
+- We use a Beta prior, so that the posterior distribution for $\theta$ is also a Beta distribution.  
+
+.center[How do we estimate the posterior distribution for the log odds?]
+
+---
+
+### Posterior inference for arbitrary functions
+
+<br>
+<br>
+
+.center[Method of transformations]
+
+  1. Find the inverse, $\theta = g^{-1}(\gamma) = \frac{e^\gamma}{1 + e^\gamma}$
+
+  2.  Compute $\frac{dg^{-1}(\gamma)}{d\gamma}$
+
+  3.  Find $p_\gamma(\gamma \mid y_1, ... y_n) = \left|\frac{dg^{-1}(\gamma)}{d\gamma}\right| \times p_\theta(g^{-1}(\gamma) \mid y_1, ... y_n)$
+
+--
+
+Don't bother! If we're computing expected values, don't need the method of transformations.
+
+---
+
+### Posterior inference for arbitrary functions
+For any $\gamma = g(\theta)$ we have 
+$$E ( g ( \theta ) | y ) = \int g ( \theta ) p ( \theta | y ) d \theta$$
+
+--
+
+Examples:
+
+- $E[\gamma \mid y] = \int \text{log}(\frac{\theta}{1-\theta})p(\theta \mid y) d\theta$
+
+-  $Pr(\theta \in R \mid y) = E ( I\left[ \theta \in R\right] | y )$
+
+- $Var(\theta \mid y) = E\left[ (\theta - E[ \theta \mid y])^2 | y \right]$
+
+<br>
+
+$$\int g(\theta) p_\theta(\theta \mid y_1, ... y_n)d\theta = \int \gamma p_\gamma(\gamma \mid y_1, ... y_n)d\gamma$$
+
+.center[[Law of the Unconscious Statstician](https://en.wikipedia.org/wiki/Law_of_the_unconscious_statistician)]
+
+
+
+
+---
+background-image: url(images/montecarloo.jpg)
+background-size: cover
+
+
+---
+
+### Monte Carlo Method for Computing Integrals
+
+<br>
+<br>
+
+.center[[Law of the Unconscious Statstician:](https://en.wikipedia.org/wiki/Law_of_the_unconscious_statistician)]
+<br>
+$$\int g(\theta) p_\theta(\theta \mid y_1, ... y_n)d\theta = \int \gamma p_\gamma(\gamma \mid y_1, ... y_n)d\gamma$$
+
+.center[We can approximate this integral through simulation!]
+
+---
+
+### Monte Carlo Method for Computing Integrals
+
+<br>
+<br>
+
+- $\overline { \theta } = \sum_{ s = 1 }^{ S } \theta^{ ( s ) } / S \rightarrow \mathrm { E } [ \theta | y_{ 1 } , \ldots , y_{ n } ]$
+
+- $\sum_{ s = 1 }^{ S } \left( \theta^{ ( s ) } - \overline { \theta } \right)^{ 2 } / ( S - 1 ) \rightarrow \operatorname { Var } [ \theta | y_{ 1 } , \dots , y_{ n } ]$
+
+- $\# \left( \theta^{ ( s ) } \leq c \right) / S \rightarrow \operatorname { Pr } ( \theta \leq c | y_{ 1 } , \ldots , y_{ n } )$
+
+- the $\alpha$-percentile of  $\left\{ \theta^{ ( 1 ) } , \ldots , \theta^{ ( S ) } \right\} \rightarrow \theta_{ \alpha }$
+
+---
+
+### Monte Carlo Error
+
+- Reminder: $\overline { \theta } = \sum_{ s = 1 }^{ S } \theta^{ ( s ) } / S$ and $S$ is the number of samples. 
+
+- If posterior samples are independent then: $$\text{Var}(\overline { \theta }) = \frac{1}{S^2} \sum_{ s = 1 }^{ S } \text{Var}(\theta^{ ( s ) }) = \frac{\text{Var}(\theta \mid y_1, ... y_n)}{S}$$
+
+- In general, the Monte Carlo error decreases with $\frac{1}{S}$
+
+- Monte Carlo integration can be very powerful _if_ you we can sample from the posterior!
+
+    + This is a _big_ "if"
+
+---
+
+<!-- The first thoughts and attempts I made to practice [the Monte Carlo Method] were suggested by a question which occurred to me in 1946 as I was convalescing from an illness and playing solitaires. The question was what are the chances that a Canfield solitaire laid out with 52 cards will come out successfully?A colleague of von Neumann and Ulam, Nicholas Metropolis, suggested using the name Monte Carlo, which refers to the Monte Carlo Casino in Monaco where Ulam's uncle would borrow money from relatives to gamble.[12 -->
+
+<!-- A Million Random Digits with 100,000 Normal Deviates is a random number book by the RAND Corporation, originally published in 1955. The book, consisting primarily of a random number table, was an important 20th century work in the field of statistics and random numbers. It was produced starting in 1947 by an electronic simulation of a roulette wheel attached to a computer, the results of which were then carefully filtered and tested before being used to generate the table. The RAND table was an important breakthrough in delivering random numbers, because such a large and carefully prepared table had never before been available. In addition to being available in book form, one could also order the digits on a series of punched cards. -->
+
+<br>
+<br>
+
+```{r, out.width="85%"}
+ig("images/random_digits_cover.png")
+```
+
+---
+
+
+```{r, out.width="55%"}
+ig("images/random_digits.png")
+```
+
+---
+
+<br>
+
+```{r, out.width="75%"}
+ig("images/digits_review_1.png")
+ig("images/digits_review_2.png")
+ig("images/digits_review_3.png")
+```
+
+---
+
+### Monte Carlo approximations of a distribution
+
+```{r, warning=FALSE, out.width="70%"}
+
+figure_4_1(cols3[1])
+
+```
+
+---
+
+### Posterior inference for arbitrary functions 
+
+Assume we want to estimate the posterior mean $E[\gamma \mid y_1, ... y_n]$.   For example, assume $\gamma = \log \operatorname { odds } ( \theta ) = \log \frac { \theta } { 1 - \theta }$.  Then:
+
+1. $\text{ sample } \theta^{ ( 1 ) } \sim p ( \theta | y_{ 1 } , \ldots , y_{ n } ) , \text { compute } \gamma^{ ( 1 ) } = \text{log}(\frac{\theta^{(1)}}{1-\theta^{(1)}})$
+
+--
+
+2. $\text{ sample } \theta^{ ( 2 ) } \sim p ( \theta | y_{ 1 } , \ldots , y_{ n } ) , \text { compute } \gamma^{ ( 2 ) } = \text{log}(\frac{\theta^{(2)}}{1-\theta^{(2)}})$
+
+--
+
+3. $\text{ sample } \theta^{ ( 3 ) } \sim p ( \theta | y_{ 1 } , \ldots , y_{ n } ) , \text { compute } \gamma^{ ( 3 ) } = \text{log}(\frac{\theta^{(3)}}{1-\theta^{(3)}})$
+
+... etc until we have $S$ samples. 
+
+Compute $\frac{1}{S} \sum_i^S \gamma^{(i)}$ where $S$ is the number of Monte Carlo samples.
+
+---
+
+### Log-odds of Robert Covington Made 3
+
+Assume $P(\theta \mid y) = \text{Beta}(527, 924)$, the posterior distribution for $\gamma$
+
+```{r, echo=TRUE, message=FALSE, out.width="40%"}
+theta_samples <- rbeta(1000, 527, 924)
+gamma_samples <- log(theta_samples / (1-theta_samples))
+```
+```{r, echo=FALSE, message=FALSE, out.width="40%"}
+tibble(gs = gamma_samples) %>% ggplot() + geom_histogram(aes(x=gs)) + 
+  geom_vline(aes(xintercept=mean(gs)), col="red", size=2) + theme_bw(base_size=24) +
+  xlab("log odds") + ggtitle("Posterior distribution of the log odds\n of RC making a 3pt shot")
+```
+
+
+
+---
+layout: false;
+class: middle, center;
+background-image: none;
+
+# Posterior Predictive Checks
+
+---
+
+### Posterior predictive model checking
+
+- Let $y_{\text{obs}}$ represent the observe data $y_1, ... y_n$
+
+- Let $\tilde y$ represent $n$ replicated (e.g fake) observations generated from the model 
+
+- $p(\tilde y  \mid y_{\text{obs}}) = \int p(\tilde y \mid \theta)p(\theta \mid y_{\text{obs}}) d\theta$
+
+- Generate test quantity from $t(\tilde y)$
+
+- Check if the simultaed test quantities are similar to the observed test quantity, $t(y_{\rm obs})$
+
+---
+
+### Posterior predictive model checking
+
+- If the model fits the data, then fake data generated under the model should look similar to the observed data
+
+- Discrepancies can be due to model misfit or chance (or both!)
+
+- Monte Carlo approach:
+
+  1. $\text{sample } \theta^{ ( s ) } \sim p(\theta | \boldsymbol{ Y } = \boldsymbol{ y }_{\mathrm{ obs }})$
+  
+  2. $\text{sample } \tilde{ \boldsymbol{ y } }^{ ( s ) } = \left(  {\tilde y }_{ 1 }^{ ( s ) }, \ldots ,  {\tilde y}_{ n }^{ ( s ) } \right) \sim \text{i.i.d. } p( y | \theta^{ ( s ) })$
+      + $\tilde y$ has same number of observations as $y_{obs}$
+      
+  3. $\text{compute } t^{ ( s ) } = t \left( \tilde { \boldsymbol { y } } ^ { ( s ) }\right)$
+
+---
+
+### Predictive Checks: an example    
+
+- In the 1990's there was a survey of 276 men, in their 30s
+
+- Recorded number of children and educational attainment 
+
+    + Bachelor's degree or higher $(n_1 = 58)$
+    + Less than bachelor's degree $(n_2 = 218)$
+    
+$$\left. \begin{array} { l } { Y _ { 1,1 } \ldots , Y _ { n _ { 1 } , 1 } | \theta _ { 1 } \sim \text { i.i.d. } \text { Poisson } \left( \theta _ { 1 } \right) } \\ { Y _ { 1,2 } \ldots , Y _ { n _ { 2 } , 2 } | \theta _ { 2 } \sim \text { i.i.d. } \operatorname { Poisson } \left( \theta _ { 2 } \right) } \end{array} \right.$$
+
+---
+
+### PPCs example
+
+<br>
+
+```{r, fig.width=6, fig.height=3, out.width="80%"}
+fig_3_9(cols2)
+```
+Number of children x Number of men
+---
+
+
+
+
+
+### A Bayesian Modeling Process (overview)
+
+1. Propose a sampling model or DGP, here $Y \mid \theta \sim \text{Pois}(\theta)$
+
+2. Propose a prior distribution, here $\theta \sim \text{Gamma}(a, b)$
+
+3. Compute the posterior distribution, here $p(\theta \mid Y=y) \sim \text{Gamma}(a + y, \beta + \nu)$
+
+--
+
+4. Simulate test statistics, $T(\tilde y)^{(s)}$ from the posterior predictive distribution
+
+  + for s in 1:num_fake_data
+    + Sample $\theta^{(s)} \sim Gamma(a + y, b + \nu)$
+    + Sample ${\tilde y}^{(s)} \sim \text{i.i.d Pois}(\theta^{(s)})$ (same sample size as $y_{obs}$)
+    + Compute $T({\tilde y}^{(s)})$
+
+--
+
+$5$. Compare the samples $T( {\tilde y}^{(s)})$ to $T(y_{\rm obs})$
+
+$6$. Identify any model misfit, go back to step 1 and repeat.
+
+---
+    
+### PPCs example    
+
+<br>
+<br>
+
+- In the 1990's there was a survey of 276 men, in their 30s
+
+- Recorded number of children and educational attainment 
+
+    + Bachelor's degree or higher $(n_1 = 58)$
+    + Less than bachelor's degree $(n_2 = 218)$
+    
+$$\left. \begin{array} { l } { Y _ { 1,1 } \ldots , Y _ { n _ { 1 } , 1 } | \theta _ { 1 } \sim \text { i.d. } . \text { Poisson } \left( \theta _ { 1 } \right) } \\ { Y _ { 1,2 } \ldots , Y _ { n _ { 2 } , 2 } | \theta _ { 2 } \sim \text { i.d. } \operatorname { Poisson } \left( \theta _ { 2 } \right) } \end{array} \right.$$
+---
+
+### PPCs example    
+
+<br>
+
+```{r, fig.width=6, fig.height=3, out.width="80%"}
+fig_3_10(cols2)
+```
+
+---
+
+### PPCs example    
+
+- Let's check the model fit for the "without Bachelor's" group first
+
+- Do $S$ times: 
+  + sample $n_2 = 218$ observations $\tilde y$ from the posterior predictive distribution
+
+- Let $T(\tilde y)$ be the fraction of men with no children
+
+--
+
+```{r, eval=FALSE, echo=TRUE}
+S <- 1000
+t_s <- numeric(S)
+for(s in 1:S){ 
+  theta_s <- rgamma(1, a, b) # whatever a and b are for my posterior
+  ytilde_s <- rpois(n=218, theta = theta_s) 
+  t_s[s] <- mean(ytilde_s == 0) # compute test stat
+}  
+
+## then visualize histogram of t_s
+
+```
+
+---
+### PPCs example
+```{r predictive_samples, cache=TRUE, warning=FALSE, message=FALSE}
+bachelors_data <- scan("../data/menchild30bach.dat")
+no_bachelors_data <- scan("../data/menchild30nobach.dat")
+
+### prior parameters
+a <- 2
+b <- 1
+
+### bachelors data
+num_bachelors <- length(bachelors_data)
+y_bachelors <- sum(bachelors_data)
+
+### data in group B
+num_no_bachelors <- length(no_bachelors_data)
+y_no_bachelors <- sum(no_bachelors_data)
+
+### samples of theta
+num_samples <- 500
+theta_bachelors_mc <- rgamma(num_samples, a + y_bachelors, b + num_bachelors)
+theta_no_bachelors_mc <- rgamma(num_samples, a + y_no_bachelors, b + num_no_bachelors)
+
+
+### predictive distribution model checking
+
+### simulating from the predictive distribution of the ratio
+### of the number of men with two children to one in the bachelors group
+
+### samples from predictives
+y_bachelors_mc <- rpois(num_samples, theta_bachelors_mc) # one Poisson sample per posterior theta draw
+y_no_bachelrs_mc <- rpois(num_samples, theta_no_bachelors_mc)
+
+frac_zero_bachelors_mc <- frac_zero_no_bachelors_mc <- frac_one_bachelors_mc <- frac_one_no_bachelors_mc <- rep(NA, num_samples)
+for(t in 1:num_samples) {
+  y_bachelors_mc <- rpois(num_bachelors, theta_bachelors_mc[t])
+  y_no_bachelors_mc <- rpois(num_no_bachelors, theta_no_bachelors_mc[t])
+
+  frac_zero_bachelors_mc[t] <- mean(y_bachelors_mc==0)
+  frac_zero_no_bachelors_mc[t] <- mean(y_no_bachelors_mc==0)
+  
+  frac_one_bachelors_mc[t] <- mean(y_bachelors_mc==1)
+  frac_one_no_bachelors_mc[t] <- mean(y_no_bachelors_mc==1)
+
+}
+
+ggplot(tibble(no_child=jitter(frac_zero_no_bachelors_mc))) + geom_histogram(aes(x=no_child)) + geom_vline(xintercept = mean(no_bachelors_data==0), col="red", size=2) + xlab("Fraction with no children")  + ylab("Count") + theme_bw(base_size=24) + ggtitle("Men without Bachelors degrees")
+
+
+
+```
+
+.center[Pr`\\((T^{\rm rep} > T^{\rm obs}) =\\)` `r mean(frac_zero_no_bachelors_mc > mean(no_bachelors_data==0))`]
+
+---
+
+### PPCs example
+
+<br>
+
+```{r, fig.width=6, fig.height=3, out.width="80%"}
+fig_3_9(cols2)
+```
+
+---
+
+### PPCs example    
+
+- Model checking both groups
+
+- Look at fit for two different test statistics:
+
+  + Fraction with no children
+
+  + Fraction with one child
+
+---
+
+### Poisson example
+
+<br>
+<br>
+
+```{r, dependson="predictive_samples", out.width="80%", fig.width=14}
+
+bachelors_plot <- ggplot(tibble(zero_children=jitter(frac_zero_bachelors_mc), one_child=jitter(frac_one_bachelors_mc))) + 
+  geom_point(aes(x=zero_children, y=one_child)) + theme_bw(base_size=24) + 
+  geom_hline(aes(yintercept=mean(bachelors_data==1)), col="red", linetype="dashed") +
+  geom_vline(aes(xintercept=mean(bachelors_data==0)), col="red", linetype="dashed") +
+  geom_point(aes(x=mean(bachelors_data==0), y=mean(bachelors_data==1)), col="red", size=2) +
+  xlab("Frac. of reps with no children") + ylab("Frac. of reps with one child") +
+  ggtitle("With Bachelors")
+
+no_bachelors_plot <- ggplot(tibble(zero_children=jitter(frac_zero_no_bachelors_mc), one_child=jitter(frac_one_no_bachelors_mc))) + 
+  geom_point(aes(x=zero_children, y=one_child)) + theme_bw(base_size=24) + 
+  geom_hline(aes(yintercept=mean(no_bachelors_data==1)), col="red", linetype="dashed") +
+  geom_vline(aes(xintercept=mean(no_bachelors_data==0)), col="red", linetype="dashed") +
+  geom_point(aes(x=mean(no_bachelors_data==0), y=mean(no_bachelors_data==1)), col="red", size=2) +
+  xlab("Frac. of reps with no children") + ylab("Frac of reps with one child") +
+  ggtitle("Without Bachelors")
+
+
+
+bachelors_plot + no_bachelors_plot
+
+```
+
+---
+
+### All models are wrong
+
+<br>
+
+```{r, out.width="70%"}
+ig("images/all-models-wrong.jpg")
+```
+
+.center[If the model is "wrong", how can we improve it?]
+
+---
+
+### PPCs and Model Refinement
+
+- How might we refine the model?
+
+- What might be a better data generating process?
+
+- How do we choose test statistics to investigate? What other statistics might be worth checking?
+
+---
+layout: false;
+class: middle, center;
+background-image: none;
+
+# Sampling strategies
+
+---
+
+### Example: non-conjugate Prior Distributions
+
+- Conjugate prior distributions make the math / concepts easy but no reason they should reflect our true prior belief
+
+- In theory, want to build the best model possible, not one that is convenient
+
+- If we choose a non-conjugate prior distribution, then the posterior distribution may have a "complicated" density.  Need Monte Carlo to estimate posterior summaries.
+
+---
+
+### Estimating Robert Covington's skill
+
+- Binomial likelihood is $p(y\mid \theta) \propto \theta^y(1-\theta)^{n-y}$
+
+- Assume I use a mixture normal prior is $p(\theta) = 0.9 f_1(\theta) + 0.1 f_2(\theta)$
+  + $f_1$ is $N(\mu=0.35, \sigma=0.04)$ and $f_2$ is $N(\mu=0.5, \sigma=0.08)$
+
+---
+
+### Example: estimating shooting skill in basketball
+
+```{r}
+
+mu <- 0.35
+sigma <- 0.04
+
+prior <- function(x) (0.9*dnorm(x, mu, sigma) + 0.1*dnorm(x, 49/100, 2*sigma))
+
+posterior <- function(x) { 
+  z <- function(x) dbeta(x, 50, 51)*prior(x)
+  zpartition <- integrate(z, lower=0, upper=1)
+  z(x) / zpartition$value
+}
+
+cov_plot <- ggplot(data.frame(x=rnorm(100)), aes(x)) + 
+  stat_function(fun=dbeta, args=list(50, 51), aes(colour="Likelihood"), size=1.2) + #likelihood
+  stat_function(fun=prior, aes(colour="Prior"), size=1.2) + #prior 
+  stat_function(fun=posterior, aes(colour="Posterior"), size=1.2) + #posterior
+  xlim(c(0.25, 0.7)) + theme_bw(base_size=24) + xlab("3PT%") + ylab("") + 
+  geom_vline(xintercept=0.49, linetype="dashed", colour="red", size=1.2) +
+  theme(legend.position = "top", legend.background = element_rect(fill = alpha("white", 0))) +
+  scale_colour_manual(name="", values=c("dark green","blue","red"))
+
+cov_plot  
+
+
+```
+
+.center[How can we compute the posterior mean and probability interval?]
+
+---
+
+### Sampling strategies
+
+- Monte Carlo methods assume that we have a method for easily generating a pseudo-random number!
+
+- If the `R` includes the appropriate random number generating function, e.g. `rnorm` then Monte Carlo is easy
+
+- If not, we need to be more clever about how we generate samples.  
+
+  + Inversion Sampling (works for univariate)
+
+  + Grid sampling (works for low dimensional problems)
+
+  + Rejection sampling (can be good for low dimensional problems)
+  
+  + Importance sampling (useful in some cases, hard in general)
+  
+  + Markov Chain Monte Carlo
+
+---
+### Sampling strategies
+
+- Reminder: why sampling? We want to approximate difficult integrals.
+   + We can represent expected values, probabilities, quantiles etc all as integrals
+   
+- In Bayesian stats we usually know how to write down the (proportional) posterior density: $L(\theta)P(\theta)$
+
+- Knowing the pdf does not mean by default we know to sample from that distribution!
+
+- If we can devise a way to sample 
+  
+---
+  
+### Probability Integral Transform
+
+- Suppose that a random variable, Y has a continuous distribution for with CDF is $F_Y$. 
+
+- Then the random variable $U = F_Y(Y)$ has a uniform distribution
+    - This is known as the "probability integral transform PIT"
+
+- By taking the inverse of $F_Y$ we have $F^{-1}(U) = Y$
+
+---
+
+### Inversion Sampling
+
+The inverse transform sampling method works as follows:
+
+1. Generate a random number $u$ from $\text{Unif}[0,1]$
+
+2. Find the inverse of the desired CDF, e.g. $F_{Y}^{-1}(u)$.
+
+3. Compute $y = F_{Y}^{-1}(u)$. $y$ is now a sample from the desired distribution.
+
+---
+
+# Inversion Sampling
+
+Animation Demo
+
+```{r inversion-gif, cache=TRUE}
+
+# ### Save target density
+# ### Uniform Envelope (in blue)
+# 
+# Nsamp <- 100
+# proposal.unif <- runif(Nsamp, 0, 1)
+# proposal.norm <- qnorm(proposal.unif)
+# 
+# proposal_data <- tibble(time=1:Nsamp, proposals = proposal.unif, norm = proposal.norm)
+# 
+# tmp_plot <- ggplot(proposal_data)  + 
+#   geom_point(aes(x=norm, y=0), shape=124, size=6, col="red")  + 
+#   geom_point(aes(x=-3, y=proposals), shape=95, size=6, col="red")  + 
+#   geom_segment(aes(x=norm, xend=norm, y=0, yend=proposal.unif)) + 
+#   geom_segment(aes(x=-3, xend=norm, y=proposal.unif, yend=proposal.unif)) +
+#   stat_function(fun = pnorm) + 
+#   transition_time(time) + ease_aes('linear') +
+#   shadow_mark(exclude_layer = 3:5) + 
+#   theme_bw(base_size=24) + xlab("Normal Samples") + ylab("Uniform Samples") + theme(legend.position="none") + 
+#   scale_x_continuous(limits=c(-3, 3)) 
+# animate(tmp_plot, fps=300)
+# 
+
+```
+
+---
+
+### Inversion Sampling
+
+- Inversion sampling can be a fast and simple way to sample from a distribution
+
+- Only effective if we know the inverse-CDF and can easily compute it
+
+- This is a big challenge in practice.  For example, even the normal distribution has a CDF, $\Phi$, which cannot be expressed analytically.
+
+  + Shifts from one hard problem (sampling) to another (computing an integral)
+  
+  + Need alternatives!
+
+---
+
+### Summary
+
+- Monte Carlo methods for computing integrals
+  + posterior means and variances
+  + posterior probabilities 
+
+- Posterior predictive checking
+    + Asks: is data simulated from the model consistent with what I observe?
+    + If not, revise and refine the model
+
+- Getting random samples is not always easy
+    + Inversion sampling useful in limited circumstances
+    + More sophisticated techniques needed, in general
+
+
+```{css, echo=FALSE}
+@media print {
+  .has-continuation {
+    display: block;
+  }
+}
+```
+
