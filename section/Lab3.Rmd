@@ -72,8 +72,8 @@ Conjugacy is formally defined as follows. A collection of pdfs (or pmfs) is call
 Conjugate priors permit fast posterior computations, which can be valuable in high dimension problems. Meanwhile, there are handy formulas for mean and mode of the posterior distributions. The following table summarizes the common distribution we might encounter throughout the course. The mean and variance of each posterior distribution are also of importance.
 ```{r, echo=FALSE}
 library(png)
-include_graphics('../labs/lab3/conjugate.PNG')
-include_graphics('../labs/lab3/common_distribution.PNG')
+include_graphics('lab3/conjugate.PNG')
+include_graphics('lab3/common_distribution.PNG')
 ```
 
 *Solution*: There is no problem for this part. But you are encouraged to derive the conjugate pairs listed in the table to appreciate this beautiful idea.
@@ -82,13 +82,13 @@ include_graphics('../labs/lab3/common_distribution.PNG')
 
 * Binomial with beta prior
 ```{r, echo=FALSE}
-include_graphics('../labs/lab3/pseudo_counts_1.png')
-include_graphics('../labs/lab3/pseudo_counts_2.png')
+include_graphics('lab3/pseudo_counts_1.png')
+include_graphics('lab3/pseudo_counts_2.png')
 ```
 
 * Poisson with gamma prior
 ```{r, echo=FALSE}
-include_graphics('../labs/lab3/poisson_gamma.png')
+include_graphics('lab3/poisson_gamma.png')
 ```
 
 # Posterior mean and MAP estimates
