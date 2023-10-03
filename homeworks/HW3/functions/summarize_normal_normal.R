@@ -46,6 +46,7 @@ summarize_normal_normal <- function (mean,
   else {
     post_mean <- (((sigma^2)*mean) + ((sd^2)*n*y_bar))/(n*(sd^2)+(sigma^2))
     post_mode <- post_mean
+    print(paste(sigma^2, sd^2, n))
     post_var <- ((sigma^2)*(sd^2))/(n*(sd^2)+(sigma^2))
     post_sd  <- sqrt(post_var)
     return(data.frame(model = c("prior", "posterior"), 

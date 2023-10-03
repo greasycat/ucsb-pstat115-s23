@@ -1,0 +1,35 @@
+---
+title: "lab 6"
+output: pdf_document
+date: "2023-02-15"
+---
+
+
+### Normal Normal Conjugacy
+We are able to prove that the posterior distribution of a Normal likelihood and Normal prior can be written in the form:
+$$
+p(\mu \mid y_{1},...,y_{n}) \sim N\left(\frac{\theta \sigma^2+n\bar{y}\tau^2}{n\tau^2+\sigma^2},\frac{\tau^2\sigma^2}{n\tau^2+\sigma^2} \right)
+$$
+
+With some rearranging we can also write it as:
+$$
+p(\mu \mid y_{1},...,y_{n}) \sim N\left(\frac{\frac{1}{\tau^2}\theta + \frac{n}{\sigma^2} \bar{y}}{\frac{1}{\tau^2}+\frac{n}{\sigma^2}}, \frac{1}{\frac{1}{\tau^2} + \frac{n}{\sigma^2}} \right)
+$$
+The proof of Normal-Normal conjugacy is also in chapter 5 of Bayes Rules book.
+
+## Example
+On a basketball team the players are drawn from a pool in which the career average free throw percentage follows a $N(75, 6^2)$ distribution. In a given year individual players free throw percentage is $N(\theta, 4^2)$ where $\theta$ is their career average.
+This season a player made 85 percent of her free throws. What is the posterior expected value of their career percentage $\theta$?
+
+Parameter of interest: $\theta$ = career average.
+Data: x = 85 = this year’s percentage.
+Prior: $\theta \sim N(75, 36)$
+Likelihood $x \sim N(\theta, 16)$.
+So $f(x|\theta) \propto exp\{\frac{−(x−\theta)^2}{2·16}\}$
+
+The updating weights are
+$\tau^2 = 36$, $\sigma^2 = 16$, $\frac{1}{\tau^2} + \frac{1}{\sigma^2}  = 52/576 = 13/144$. Since n=1, $\bar{x}=85$.
+Therefore
+$$\mu_{post} = \frac{\frac{1}{\tau^2}\theta + \frac{n}{\sigma^2} \bar{y}}{\frac{1}{\tau^2}+\frac{n}{\sigma^2}} = (75/36 + 85/16)/(13/144) = 81.9$$ 
+$$\sigma^2_{post} = \frac{1}{\frac{1}{\tau^2} + \frac{n}{\sigma^2}} = 144/13 = 11.1$$
+The posterior pdf is f (θ|x = 85) ∼ N(81.9, 11.1)$$.

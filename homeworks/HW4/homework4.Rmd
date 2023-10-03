@@ -51,15 +51,55 @@ _A priori_, we expect the rate of goal scoring to be $\lambda \sim Gamma(a, b)$.
 **1a. (5pts)** 
 Compute the theoretical posterior parameters a, b, and also the posterior mean. 
 
+```{r}
+a = 1
+b = 0.25
+score <- c(4, 7, 3, 2, 3)
+n <- length(score)
+post_a <- a + sum(score)
+post_b <- b + n
+print(paste("a:",post_a))
+print(paste("b:",post_b))
+print(paste("Posterior mean:",post_a/post_b))
+```
+
 **1b. (10pts)** 
 Create a new Stan file by selecting "File -> New File -> Stan file" in RStudio and name it `women_cup.stan`, use Rstan to report and estimate the posterior mean of the scoring rate by computing the sample average of all Monte Carlo samples of $\lambda$.
 
+```{r, message=FALSE, warning=FALSE, error=FALSE}
+stan_model <- cmdstan_model(stan_file=paste(getwd(),"/women_cup.stan", sep=""))
+women_cup_fit <- stan_model$sample(data=list(N=n, y=score, alpha=a, beta=b),
+                              refresh=0)
+mean_lambda <- women_cup_fit$summary() %>% 
+    filter(variable == "lambda") %>% 
+    select("mean")
+
+print(paste("Posterior Mean", mean_lambda))
+```
+
 **1c. (5pts)**
 Create a histogram of the Monte Carlo samples of $\lambda$ and add a line showing the theoretical posterior of density of $\lambda$. Do the Monte Carlo samples coincide with the theoretical density?
+```{r}
+samples <- women_cup_fit$draws(format = "df")
+theoretical <- data.frame(lambda = rgamma(4000, post_a, post_b))
+
+# Create histogram
+ggplot(samples, aes(x = lambda)) +  
+    geom_histogram(aes(y = ..density..), color = "black", alpha = .2, fill = "lightblue", bins = 30) +
+    geom_density(data = theoretical, aes(x = lambda)) +
+    xlab("Lambda") + 
+    ylab("Frequency") + 
+    ggtitle("Histogram of lambda samples") 
+
+# The Sample density drawn from MC is very close to the theoretical density
+```
+
 
 **1d. (10pts)**
 Use the Monte Carlo samples from Stan to compute the mean of the predictive posterior distribution to estimate the distribution of expected goals scored for next game played by the Chinese women's soccer team.
-
+```{r}
+print(paste("Mean of posterior predictive:", mean(samples$y_tilde)))
+```
 
 ### Problem 2. Bayesian inference for the normal distribution in Stan.
 
@@ -82,9 +122,11 @@ mean of 15 (to match the intended standard deviation of the IQ test) and
 so you decide on setting $a=15$ and $b=1$ (remember, the mean of a Gamma
 is a/b). Assume the following IQ scores are observed:
 
-```{r}
+```{r, message=FALSE, warning=FALSE, error=FALSE}
 y <- c(70, 85, 111, 111, 115, 120, 123)
 n <- length(y)
+iq_model <- cmdstan_model(stan_file=paste(getwd(),"/IQ_model.stan", sep=""))
+iq_fit <- iq_model$sample(data=list(n=n, y=y),refresh=0)
 ```
 
 **2a. (10pts)** Make a scatter plot of the posterior distribution of the mean,
@@ -93,9 +135,29 @@ $1/\sigma^2$ on the y-axis. What is the posterior relationship between
 $\mu$ and $1/\sigma^2$? Why does this make sense? *Hint:* review the
 lecture notes. 
 
+```{r}
+iq_samples <- iq_fit$draws(format = "df")
+iq_samples$precision = 1/iq_samples$sigma^2
+iq_samples
+ggplot(iq_samples, aes(x = mu, y = precision)) +
+  geom_point(alpha = 0.2) + 
+  theme_minimal() +
+  labs(x = expression(mu), y = expression(1/sigma^2)) +
+  ggtitle("Posterior distribution of mu and precision")
+
+
+```
+the inverse of the precision determines the variance of the mu, therefore when the precision is small, the mu spreads more. And when precision is large, the mu spreads less.
+On the plot, the relationship is illustrated by an uppper triangle shape. As the precision increase, the mu is getting closer
+
 **2b. (5pts)** You are interested in whether the mean IQ in the town is greater
 than the mean IQ in the overall population. Use Stan to find the
 posterior probability that $\mu$ is greater than 100.
+
+```{r}
+# length(iq_samples$mu[iq_samples$mu > 100])/4000
+print(paste("Pr mean greater than 100 (Normal):", mean(iq_samples$mu_gt_100)))
+```
 
 **2c. (15pts)** You notice that two of the seven scores are significantly lower
 than the other five. You think that the normal distribution may not be
@@ -120,6 +182,18 @@ prior distribution, $p(\mu, \sigma)$ as used in the normal model. Under
 the Laplace model, what is the posterior probability that the median IQ
 in the town is greater than 100? How does this compare to the
 probability under the normal model? Why does this make sense?
+
+```{r, , message=FALSE, warning=FALSE, error=FALSE}
+iq_model_2 <- cmdstan_model(stan_file=paste(getwd(),"/IQ_model_1.stan", sep=""))
+iq_fit_2 <- iq_model_2$sample(data=list(n=n, y=y),refresh=0)
+```
+
+```{r}
+iq_samples_2 <- iq_fit_2$draws(format = "df")
+print(paste("Pr medium greater than 100 (Laplace):", mean(iq_samples_2$mu_gt_100)))
+```
+Because of the shape of the Laplace distribution, outliers are getting weighted down, so the two outliers in the data (70, 85) contributes less to the shape of the posterior
+therefore the mean of the posterior moves to the right
 
 ### Problem 3. Cows and milk
 
@@ -147,22 +221,84 @@ Assume the milk production of the cows on the diet is given by a random variable
 
 ```{r}
 cows_string = " 
-  INCLUDE YOUR STAN CODE HERE.
+data {
+  int<lower=0> n1;
+  int<lower=0> n2;
+  array[n1] int<lower=0> y1;
+  array[n2] int<lower=0> y2;
+  
+}
 
-  YOU CAN BREAK LINES.
+parameters {
+  real<lower=0> mu1;
+  real<lower=0> sigma1;
+  real<lower=0> mu2;
+  real<lower=0> sigma2;
+}
 
-  YOU CAN ALSO IDENT YOUR TEXT.
+model {
+  sigma1 ~ uniform(0, 1000);  
+  mu1 ~ uniform(0,2000);  
+  sigma2 ~ uniform(0, 1000);  
+  mu2 ~ uniform(0,2000);  
+  
+  y1 ~ normal(mu1, sigma1);
+  y2 ~ normal(mu2, sigma2);
+}
+
 "
 ```
 
 
 **3b. (5pts)** Generate samples from the unknown parameters in the model and save them on an object named `stan_samples`
 
-```{r}
-# stan_samples = ....
+```{r, , message=FALSE, warning=FALSE, error=FALSE}
+y1 = diet_milk
+n1 = length(y1)
+y2 = normal_milk
+n2 = length(y2)
+
+cows_stan <- write_stan_file(cows_string)
+cows_model <- cmdstan_model(stan_file=cows_stan)
+cows_fit <- cows_model$sample(data=list(n1=n1, y1=y1, n2=n2, y2=y2),refresh=0)
+stan_samples = cows_fit$draws(format = "df")
 ```
 
 
 **3c. (5pts)** Plot the 90$\%$ credible interval based on the quantiles of the posterior distribution for each one of the four parameters in the model.
+```{r}
+library(HDInterval)
+mu1_ci = hdi(stan_samples$mu1, credMass = .9)
+sigma1_ci = hdi(stan_samples$sigma1, credMass = .9)
+
+mu2_ci = hdi(stan_samples$mu2, credMass = .9)
+sigma2_ci = hdi(stan_samples$sigma2, credMass = .9)
+```
+
+```{r}
+plot <- function(data, ci, label) {
+    ggplot(data = data.frame(x = data), aes(x = x)) +
+        geom_density(col = "black") +
+        geom_vline(xintercept = ci[1], color = "red", linetype = "dashed")+
+        geom_vline(xintercept = ci[2], color = "red", linetype = "dashed")+
+        theme_minimal() +
+        xlab(label) + 
+        ggtitle(paste("Posterior distribution and 90% credible interval of", label))
+}
+
+plot(stan_samples$mu1, mu1_ci, "mu1")
+plot(stan_samples$sigma1, sigma1_ci, "sigma1")
+plot(stan_samples$mu2, mu2_ci, "mu2")
+plot(stan_samples$sigma2, sigma2_ci, "sigma2")
+
+
+```
 
 **3d. (10pts)** Store the posterior samples of the difference $\mu_2 - \mu_1$ on an object named `mu_diff`, plot its histogram and answer the main question: is it likely that the diet is going to make the cows produce more milk on average?
+```{r}
+mu_diff <- stan_samples$mu2 - stan_samples$mu1
+ggplot(data.frame(x = mu_diff), aes(x=x)) +
+    geom_histogram()
+```
+
+not likely since the differences distribution is centered at 0 and has a symmetrical normal shape, indicating a equal likely chance to increase or decrease the milk production.

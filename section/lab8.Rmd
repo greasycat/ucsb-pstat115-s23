@@ -23,12 +23,12 @@ knitr::opts_chunk$set(echo=TRUE,
                       fig.pos = 'H')
 library(tidyverse)
 library(ggplot2)
-library(rstan)
+# library(rstan)
 # install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 library(cmdstanr)
 # install_cmdstan()
-library(rstan)
-library(cmdstanr)
+# library(rstan)
+# library(cmdstanr)
 library(bayesplot)
 ```
 
@@ -75,7 +75,7 @@ y <- b*x+a+rnorm(100, mean = 0, sd = 2)
 n <- length(y)
 ggplot(data = data.frame(x=x,y=y))+geom_point(aes(x=x,y=y))+geom_abline(slope = b, intercept = a, col = "red")+theme_bw()
 
-stan_model2 = cmdstan_model("lab8/simple_linear_regression.stan")
+stan_model2 = cmdstan_model("simple_linear_regression.stan")
 stan_fit2 =   stan_model2$sample(
     data = list(N = n, y = y, x=x),
     refresh = 0, show_messages=FALSE)
